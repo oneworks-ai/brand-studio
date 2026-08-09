@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "scenes": [
+    {
+      "name": "github-org-readme",
+      "article": 1,
+      "width": 1292,
+      "height": 640,
+      "themes": ["light", "dark"]
+    },
+    {
+      "name": "github-social-preview",
+      "article": 2,
+      "width": 1280,
+      "height": 640,
+      "themes": ["light", "dark"]
+    },
+    {
+      "name": "homepage-open-graph",
+      "article": 3,
+      "width": 1200,
+      "height": 600,
+      "themes": ["light", "dark"]
+    },
+    {
+      "name": "vscode-marketplace",
+      "article": 4,
+      "width": 1280,
+      "height": 640,
+      "themes": ["light", "dark"]
+    },
+    {
+      "name": "chrome-web-store",
+      "article": 5,
+      "width": 1280,
+      "height": 640,
+      "themes": ["light", "dark"]
+    },
+    {
+      "name": "npm-readme-header",
+      "article": 6,
+      "width": 1280,
+      "height": 640,
+      "themes": ["light", "dark"]
+    }
+  ]
+}
