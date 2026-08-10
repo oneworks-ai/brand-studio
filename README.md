@@ -4,6 +4,8 @@ One Works Brand Studio is the canonical source for maintained brand scenes and
 their exported assets. The preview and PNG export pipeline render the same DOM;
 there is no separate simplified distribution template.
 
+[Open the published Brand Studio](https://oneworks-ai.github.io/brand-studio/)
+
 ## Commands
 
 ```bash

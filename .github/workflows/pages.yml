@@ -1,0 +1,57 @@
+name: Deploy Brand Studio
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/pages.yml
+      - assets/**
+      - dist/**
+      - index.html
+      - scripts/**
+      - src/**
+      - studio.config.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  pages: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify committed Studio and exports
+        run: node scripts/check.mjs
+        env:
+          ONEWORKS_SKIP_DISTRIBUTION_SYNC_CHECK: 1
+      - name: Assemble Pages artifact
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -R assets dist _site/
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

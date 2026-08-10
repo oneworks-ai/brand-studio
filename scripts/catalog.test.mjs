@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -24,6 +25,21 @@ test('resolveContained rejects traversal and absolute paths', () => {
 test('resolveContained allows a nested path inside its base', () => {
   const directory = mkdtempSync(join(tmpdir(), 'oneworks-brand-studio-test-'))
   assert.equal(resolveContained(directory, 'nested/asset.png', 'test asset'), join(directory, 'nested/asset.png'))
+})
+
+test('read-only checks do not require a One Works app checkout', () => {
+  const missingAppRoot = join(mkdtempSync(join(tmpdir(), 'oneworks-missing-app-')), 'app')
+  const result = spawnSync(process.execPath, ['scripts/check.mjs'], {
+    cwd: join(import.meta.dirname, '..'),
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      ONEWORKS_APP_ROOT: missingAppRoot,
+      ONEWORKS_SKIP_DISTRIBUTION_SYNC_CHECK: '1'
+    }
+  })
+  assert.equal(result.status, 0, result.stderr || result.stdout)
+  assert.match(result.stdout, /Verified 14 exact scene exports from one source\./u)
 })
 
 test('distribution catalog references configured scenes and safe links', () => {

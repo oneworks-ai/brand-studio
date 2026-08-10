@@ -32,6 +32,8 @@ jobs:
         with:
           repository: oneworks-ai/app
           path: app
+      - name: Checkout product catalog asset sources
+        run: git -C app submodule update --init --depth 1 assets/demo-video
       - uses: pnpm/action-setup@v4
         with:
           version: 10.13.1
