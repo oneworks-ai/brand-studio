@@ -6,7 +6,7 @@
       "platform": "GitHub",
       "surface": "Organization 头像",
       "status": "manual",
-      "preview": "apps/client/public/pwa-icon-512.png",
+      "preview": "assets/distribution/github-org-avatar-default.png",
       "artifacts": [
         "apps/client/public/pwa-icon-512.png"
       ],
@@ -369,8 +369,8 @@
       "surface": "Favicon、PWA 与 Apple Touch",
       "status": "automated",
       "preview": {
-        "light": "apps/client/public/favicon-linear-light.svg",
-        "dark": "apps/client/public/favicon-linear-dark.svg"
+        "light": "assets/distribution/pwa-web-icons-light.svg",
+        "dark": "assets/distribution/pwa-web-icons-dark.svg"
       },
       "artifacts": [
         "apps/client/public/favicon-linear-light.svg",
@@ -404,7 +404,7 @@
       "platform": "Desktop",
       "surface": "macOS、Windows 与 Linux App Icon",
       "status": "automated",
-      "preview": "apps/desktop/build/icon.png",
+      "preview": "assets/distribution/desktop-icons-default.png",
       "artifacts": [
         "apps/desktop/build/icon.icns",
         "apps/desktop/build/icon.ico",
@@ -437,8 +437,8 @@
       "surface": "Launcher Adaptive Icon",
       "status": "automated",
       "preview": {
-        "light": "apps/android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png",
-        "dark": "apps/android/app/src/main/res/drawable-night-nodpi/ic_launcher_foreground.png"
+        "light": "assets/distribution/android-launcher-light.png",
+        "dark": "assets/distribution/android-launcher-dark.png"
       },
       "artifacts": [
         "apps/android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png",

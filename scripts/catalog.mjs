@@ -134,7 +134,7 @@ export const readDistribution = (config = readStudioConfig()) => {
       throw new Error(`Invalid distribution preview for ${surface.id}`)
     }
     for (const previewPath of previewPaths) {
-      const previewBase = previewPath.startsWith('dist/') ? root : productRoot
+      const previewBase = previewPath.startsWith('dist/') || previewPath.startsWith('assets/') ? root : productRoot
       const preview = resolveContained(previewBase, previewPath, `distribution preview for ${surface.id}`)
       const generatedPreview = previewPath === `dist/${surface.studioScene}-light.png` ||
         previewPath === `dist/${surface.studioScene}-dark.png`

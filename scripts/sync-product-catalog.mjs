@@ -46,7 +46,7 @@ export const syncProductAssets = () => {
       ? [['default', surface.preview]]
       : [['light', surface.preview.light], ['dark', surface.preview.dark]]
     for (const [theme, sourcePath] of previews) {
-      if (sourcePath.startsWith('dist/')) continue
+      if (sourcePath.startsWith('dist/') || sourcePath.startsWith('assets/distribution/')) continue
       const source = resolveContained(productRoot, sourcePath, `distribution preview for ${surface.id}`)
       const extension = sourcePath.slice(sourcePath.lastIndexOf('.'))
       const destination = resolveContained(
