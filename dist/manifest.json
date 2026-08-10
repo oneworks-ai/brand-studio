@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "catalog": "catalog/catalog.json",
-  "catalogEntries": 31,
+  "catalogEntries": 32,
   "inputs": [
     {
       "file": "assets/distribution/android-launcher-dark.png",
@@ -54,6 +54,14 @@
     {
       "file": "assets/icons/adapters/opencode.svg",
       "sha256": "dc727d9f8d789211dd778df0ef786dcf6ede157f957d48c6413e823b8c1e2542"
+    },
+    {
+      "file": "assets/icons/adapters/pi-dark.svg",
+      "sha256": "2b84aa73b8e358959d2c44fdf1a09d5352dc55948095759216832664db7c28cc"
+    },
+    {
+      "file": "assets/icons/adapters/pi.svg",
+      "sha256": "0f16df179ba0783c57943de450d1cbde36300c4ab3afa90ea4d1ce555ee3f8e3"
     },
     {
       "file": "assets/icons/channels/imessage.svg",
@@ -161,7 +169,7 @@
     },
     {
       "file": "catalog/catalog.json",
-      "sha256": "b4e6d2e737a42a098102afbd1519429e9fd5d9bae28e2c251d4b51fb95707fda"
+      "sha256": "333ebc66d9d1868c7fcb493416316c2c8a5b0bbf3e006141c9750fdfdced7b15"
     },
     {
       "file": "distribution/distribution.json",
@@ -177,7 +185,7 @@
     }
   ],
   "source": "index.html",
-  "sourceSha256": "3ca71775a1ac90d0c6661832594df450d661cba58557cefacbf05065cb58260b",
+  "sourceSha256": "70c5f5cc3d8cf8987585da4c92aa06f58688977e19ee3702aa9d109bf536256e",
   "artifacts": [
     {
       "file": "dist/github-org-readme-light.png",
@@ -199,7 +207,7 @@
       "file": "dist/github-social-preview-light.png",
       "height": 640,
       "scene": "github-social-preview",
-      "sha256": "ed7c6be1d21a5d7481170a108799fe6e74a21405eebcfc92e08cad50c489c6eb",
+      "sha256": "233e94d64068829df4f279d4e729e32cceddf84d9522db33d5d7965ca134f26f",
       "theme": "light",
       "width": 1280
     },
@@ -207,7 +215,7 @@
       "file": "dist/github-social-preview-dark.png",
       "height": 640,
       "scene": "github-social-preview",
-      "sha256": "f32ae34f0163d4fb830520565036eea88651ba65bd7f18873e5c05f9c67671bc",
+      "sha256": "6c305b6f730b339f2194e9a39b4bb3454536e55daa83180e212cffc928434f7f",
       "theme": "dark",
       "width": 1280
     },
@@ -215,7 +223,7 @@
       "file": "dist/homepage-open-graph-light.png",
       "height": 600,
       "scene": "homepage-open-graph",
-      "sha256": "214b92b67823c8c881dfea3eab6b2750c5d93996a0002eb9fdd1555035322302",
+      "sha256": "cfbdc8de9299c6b76ec8b0d30b3214aa0f2e644a0690e810750e4bcfdf158280",
       "theme": "light",
       "width": 1200
     },
@@ -223,7 +231,7 @@
       "file": "dist/homepage-open-graph-dark.png",
       "height": 600,
       "scene": "homepage-open-graph",
-      "sha256": "1e0a10397b902a3dc2445c31074cc22fcf5fce59b69e5a51776baf05ad40a57d",
+      "sha256": "f25746657ec3a4c6a6a4803f5913930c39abfd9ffe54378470192ef537c85b7f",
       "theme": "dark",
       "width": 1200
     },
@@ -279,7 +287,7 @@
       "file": "dist/x-profile-header-light.png",
       "height": 500,
       "scene": "x-profile-header",
-      "sha256": "862fb1ec0b937b8e94879c172461b10911076287d70c5d7f36ca7ff77cffe0de",
+      "sha256": "e9b1490bc0a1ab3e82ed455de044dcb0d644f16fe1bd86f214c60f849ebffd87",
       "theme": "light",
       "width": 1500
     },
@@ -287,7 +295,7 @@
       "file": "dist/x-profile-header-dark.png",
       "height": 500,
       "scene": "x-profile-header",
-      "sha256": "eb8c2d9b88b2b0281dc1d2a462c83808eb8b59f84a86d6bb126119c962f0d581",
+      "sha256": "94fe8246fe43c5577d2a1ddeb17d8be12358f84c9a43b4e51f182d120e1bcb3a",
       "theme": "dark",
       "width": 1500
     }

@@ -18,8 +18,10 @@ exports, visual baselines, export manifest, and the stable distribution catalog.
   Non-scene rows show synchronized current repository assets. All previews
   use containment rather than cropping so the asset itself stays honest.
 - Catalog-driven scenes consume adapter, model-service, and channel entries
-  from the application repository. Keep scheduled and repository-dispatch
-  synchronization working when changing the render pipeline.
+  from the application repository's `assets/brand/catalog.json`. Keep
+  scheduled and repository-dispatch synchronization working when changing the
+  render pipeline; app-owned additions and removals must converge without
+  deleting non-app extensions.
 - `distribution/distribution.json` owns stable publishing destinations, links,
   update instructions, automation boundaries, and pitfalls. Temporary rollout
   progress never belongs in the Studio UI or this catalog.
@@ -41,3 +43,7 @@ exports, visual baselines, export manifest, and the stable distribution catalog.
 7. Run `pnpm check` before delivery; it rejects stale consumers.
 
 Generated assets are consumers of `index.html`, never design sources.
+
+The organization does not allow GitHub Actions to create pull requests.
+Automation may update `automation/render-brand-assets` and report the branch,
+but a maintainer or authorized Git operator owns PR creation and merging.

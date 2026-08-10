@@ -7,6 +7,7 @@ export const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 export const catalogPath = resolve(root, 'catalog/catalog.json')
 export const distributionPath = resolve(root, 'distribution/distribution.json')
 export const productRoot = resolve(process.env.ONEWORKS_APP_ROOT ?? resolve(root, '../..'))
+export const productCatalogPath = resolve(productRoot, 'assets/brand/catalog.json')
 
 export const readJson = path => JSON.parse(readFileSync(path, 'utf8'))
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex')
@@ -59,8 +60,10 @@ export const readStudioConfig = () => {
         throw new Error(`Invalid ${dimension} for ${scene.name}`)
       }
     }
-    if (!Array.isArray(scene.themes) || scene.themes.length !== 2 ||
-        new Set(scene.themes).size !== 2 || scene.themes.some(theme => !themes.has(theme))) {
+    if (
+      !Array.isArray(scene.themes) || scene.themes.length !== 2 ||
+      new Set(scene.themes).size !== 2 || scene.themes.some(theme => !themes.has(theme))
+    ) {
       throw new Error(`Scene ${scene.name} must declare light and dark themes exactly once`)
     }
   }
@@ -94,13 +97,58 @@ export const readCatalog = () => {
       if (!/^assets\/icons\/[a-z0-9/_-]+\.(?:ico|png|svg|webp)$/u.test(icon)) {
         throw new Error(`Invalid catalog icon path for ${entry.id}: ${icon}`)
       }
-      const path = resolveContained(resolve(root, 'assets/icons'), icon.slice('assets/icons/'.length), `catalog icon for ${entry.id}`)
+      const path = resolveContained(
+        resolve(root, 'assets/icons'),
+        icon.slice('assets/icons/'.length),
+        `catalog icon for ${entry.id}`
+      )
       if (!imageExtensions.has(extname(path)) || !existsSync(path)) {
         throw new Error(`Missing catalog icon for ${entry.id}: ${icon}`)
       }
     }
     if (typeof entry.provenance?.repository !== 'string' || typeof entry.provenance?.path !== 'string') {
       throw new Error(`Missing catalog provenance for ${entry.id}`)
+    }
+  }
+  return catalog
+}
+
+export const readProductCatalog = () => {
+  const catalog = readJson(productCatalogPath)
+  if (catalog.schemaVersion !== 1 || !Array.isArray(catalog.entries)) {
+    throw new Error('Unsupported product brand catalog schema; expected schemaVersion 1.')
+  }
+
+  const identities = new Set()
+  for (const entry of catalog.entries) {
+    if (typeof entry.id !== 'string' || entry.id === '' || !/^[a-z0-9-]+$/u.test(entry.id)) {
+      throw new Error(`Invalid product catalog id: ${String(entry.id)}`)
+    }
+    if (!kinds.has(entry.kind)) throw new Error(`Invalid product catalog kind for ${entry.id}`)
+    if (typeof entry.label !== 'string' || entry.label.trim() === '') {
+      throw new Error(`Missing product catalog label for ${entry.id}`)
+    }
+    if (typeof entry.enabled !== 'boolean' || typeof entry.featured !== 'boolean') {
+      throw new Error(`Missing product catalog visibility for ${entry.id}`)
+    }
+    if (entry.outputId != null && (typeof entry.outputId !== 'string' || !/^[a-z0-9-]+$/u.test(entry.outputId))) {
+      throw new Error(`Invalid product catalog output id for ${entry.id}`)
+    }
+    if (!Number.isInteger(entry.priority) || entry.priority < 0) {
+      throw new Error(`Invalid product catalog priority for ${entry.id}`)
+    }
+    if (identities.has(`${entry.kind}:${entry.id}`)) {
+      throw new Error(`Duplicate product catalog identity: ${entry.kind}:${entry.id}`)
+    }
+    identities.add(`${entry.kind}:${entry.id}`)
+    for (const source of [entry.icon, entry.darkIcon].filter(Boolean)) {
+      if (!/^(?:apps|assets|packages)\/[a-zA-Z0-9/_.-]+\.(?:ico|png|svg|webp)$/u.test(source)) {
+        throw new Error(`Invalid product catalog icon path for ${entry.id}: ${source}`)
+      }
+      const path = resolveContained(productRoot, source, `product catalog source for ${entry.id}`)
+      if (!imageExtensions.has(extname(path)) || !existsSync(path)) {
+        throw new Error(`Missing product catalog icon for ${entry.id}: ${source}`)
+      }
     }
   }
   return catalog
@@ -160,7 +208,9 @@ export const readDistribution = (config = readStudioConfig()) => {
       }
     }
     for (const artifact of surface.artifacts) {
-      if (typeof artifact !== 'string' || artifact.trim() === '' || artifact.includes('..') || artifact.startsWith('/')) {
+      if (
+        typeof artifact !== 'string' || artifact.trim() === '' || artifact.includes('..') || artifact.startsWith('/')
+      ) {
         throw new Error(`Invalid distribution artifact for ${surface.id}: ${String(artifact)}`)
       }
     }
@@ -171,10 +221,12 @@ export const readDistribution = (config = readStudioConfig()) => {
       const deploymentTargets = new Set()
       const artifactTargets = new Set(surface.artifacts)
       for (const deployment of surface.deployments) {
-        if (!deploymentThemes.has(deployment?.theme) ||
-            typeof deployment?.target !== 'string' || deployment.target.trim() === '' ||
-            deployment.target.includes('..') || deployment.target.startsWith('/') ||
-            deploymentTargets.has(deployment.target)) {
+        if (
+          !deploymentThemes.has(deployment?.theme) ||
+          typeof deployment?.target !== 'string' || deployment.target.trim() === '' ||
+          deployment.target.includes('..') || deployment.target.startsWith('/') ||
+          deploymentTargets.has(deployment.target)
+        ) {
           throw new Error(`Invalid distribution deployment for ${surface.id}`)
         }
         deploymentTargets.add(deployment.target)
@@ -186,8 +238,10 @@ export const readDistribution = (config = readStudioConfig()) => {
       }
     }
     for (const link of surface.quickLinks) {
-      if (typeof link.label !== 'string' || link.label.trim() === '' ||
-          typeof link.url !== 'string' || !externalUrlPattern.test(link.url)) {
+      if (
+        typeof link.label !== 'string' || link.label.trim() === '' ||
+        typeof link.url !== 'string' || !externalUrlPattern.test(link.url)
+      ) {
         throw new Error(`Invalid distribution link for ${surface.id}`)
       }
     }
@@ -200,9 +254,10 @@ export const readDistribution = (config = readStudioConfig()) => {
   return distribution
 }
 
-export const enabledEntries = (catalog, kind, { featuredOnly = true } = {}) => catalog.entries
-  .filter(entry => entry.kind === kind && entry.enabled === true && (!featuredOnly || entry.featured === true))
-  .sort((left, right) => left.priority - right.priority || left.id.localeCompare(right.id))
+export const enabledEntries = (catalog, kind, { featuredOnly = true } = {}) =>
+  catalog.entries
+    .filter(entry => entry.kind === kind && entry.enabled === true && (!featuredOnly || entry.featured === true))
+    .sort((left, right) => left.priority - right.priority || left.id.localeCompare(right.id))
 
 export const catalogInputs = catalog => {
   const paths = new Set([

@@ -15,6 +15,8 @@ import {
   xOrbitCenter,
   xOrbitTiers
 } from './compile.mjs'
+import { isDistributionTargetExcluded } from './sync-distribution-assets.mjs'
+import { mergeProductCatalog } from './sync-product-catalog.mjs'
 
 test('resolveContained rejects traversal and absolute paths', () => {
   const directory = mkdtempSync(join(tmpdir(), 'oneworks-brand-studio-test-'))
@@ -42,12 +44,130 @@ test('read-only checks do not require a One Works app checkout', () => {
   assert.match(result.stdout, /Verified 14 exact scene exports from one source\./u)
 })
 
+test('product catalog discovery adds and removes app-owned entries without replacing external entries', () => {
+  const catalog = {
+    schemaVersion: 1,
+    entries: [
+      {
+        id: 'stale',
+        kind: 'adapter',
+        icon: 'assets/icons/adapters/stale.svg',
+        provenance: { repository: 'oneworks-ai/app', path: 'assets/stale.svg' }
+      },
+      {
+        id: 'external',
+        kind: 'adapter',
+        icon: 'assets/icons/adapters/external.svg',
+        provenance: { repository: 'example/external', path: 'external.svg' }
+      }
+    ]
+  }
+  const productCatalog = {
+    schemaVersion: 1,
+    entries: [{
+      id: 'pi',
+      label: 'Pi',
+      kind: 'adapter',
+      icon: 'assets/brand/adapters/pi.svg',
+      darkIcon: 'assets/brand/adapters/pi-dark.svg',
+      enabled: true,
+      featured: true,
+      priority: 70
+    }]
+  }
+
+  assert.deepEqual(mergeProductCatalog(catalog, productCatalog), {
+    schemaVersion: 1,
+    entries: [
+      {
+        id: 'pi',
+        label: 'Pi',
+        kind: 'adapter',
+        icon: 'assets/icons/adapters/pi.svg',
+        darkIcon: 'assets/icons/adapters/pi-dark.svg',
+        enabled: true,
+        featured: true,
+        priority: 70,
+        provenance: {
+          repository: 'oneworks-ai/app',
+          path: 'assets/brand/adapters/pi.svg',
+          darkPath: 'assets/brand/adapters/pi-dark.svg'
+        }
+      },
+      catalog.entries[1]
+    ]
+  })
+})
+
+test('product catalog discovery rejects extension and product output conflicts before synchronization', () => {
+  const productEntry = {
+    id: 'pi',
+    label: 'Pi',
+    kind: 'adapter',
+    icon: 'assets/brand/adapters/pi.svg',
+    enabled: true,
+    featured: true,
+    priority: 70
+  }
+
+  assert.throws(
+    () =>
+      mergeProductCatalog({
+        schemaVersion: 1,
+        entries: [{
+          id: 'pi',
+          kind: 'adapter',
+          icon: 'assets/icons/adapters/external-pi.svg',
+          provenance: { repository: 'example/external', path: 'external.svg' }
+        }]
+      }, { schemaVersion: 1, entries: [productEntry] }),
+    /identity conflicts with Studio extension/u
+  )
+
+  assert.throws(
+    () =>
+      mergeProductCatalog({
+        schemaVersion: 1,
+        entries: [{
+          id: 'external',
+          kind: 'adapter',
+          icon: 'assets/icons/adapters/pi.svg',
+          provenance: { repository: 'example/external', path: 'external.svg' }
+        }]
+      }, { schemaVersion: 1, entries: [productEntry] }),
+    /output path conflicts with Studio extension/u
+  )
+
+  assert.throws(
+    () =>
+      mergeProductCatalog({ schemaVersion: 1, entries: [] }, {
+        schemaVersion: 1,
+        entries: [
+          productEntry,
+          { ...productEntry, id: 'pi-alias', outputId: 'pi' }
+        ]
+      }),
+    /Product catalog output path conflicts/u
+  )
+})
+
+test('distribution sync exclusions match only declared consumer prefixes', () => {
+  const prefixes = ['assets/homepage/']
+
+  assert.equal(isDistributionTargetExcluded('assets/homepage/apps/homepage/social.png', prefixes), true)
+  assert.equal(isDistributionTargetExcluded('assets/brand/distribution/homepage.png', prefixes), false)
+})
+
 test('distribution catalog references configured scenes and safe links', () => {
   const distribution = readDistribution()
   assert.equal(distribution.surfaces.length, 11)
   assert.equal(new Set(distribution.surfaces.map(surface => surface.id)).size, 11)
   assert.ok(distribution.surfaces.some(surface => surface.id === 'github-org-avatar' && surface.status === 'manual'))
-  assert.ok(distribution.surfaces.some(surface => surface.id === 'x-profile-header' && surface.studioScene === 'x-profile-header'))
+  assert.ok(
+    distribution.surfaces.some(surface =>
+      surface.id === 'x-profile-header' && surface.studioScene === 'x-profile-header'
+    )
+  )
   assert.ok(distribution.surfaces.every(surface => surface.preview != null))
   assert.ok(distribution.surfaces.every(surface => surface.quickLinks.every(link => link.url.startsWith('https://'))))
   for (const surface of distribution.surfaces.filter(surface => surface.studioScene != null)) {
@@ -74,7 +194,13 @@ test('X header draws the Org layout natively at its own dimensions', () => {
     entries.forEach((entry, index) => {
       const angle = orbitAngle(tier, index, entries.length)
       const [x, y] = orbitPoint(tier, angle)
-      assert.ok(xScene.includes(`data-catalog-id="${entry.id}" data-catalog-kind="${kind}" data-orbit-angle="${angle.toFixed(2)}" data-orbit-tier="${kind}" style="--x:${x.toFixed(2)};--y:${y.toFixed(2)}"`))
+      assert.ok(
+        xScene.includes(
+          `data-catalog-id="${entry.id}" data-catalog-kind="${kind}" data-orbit-angle="${
+            angle.toFixed(2)
+          }" data-orbit-tier="${kind}" style="--x:${x.toFixed(2)};--y:${y.toFixed(2)}"`
+        )
+      )
       assert.ok(x >= 0 && x <= 100 && y >= 0 && y <= 100)
     })
   }
