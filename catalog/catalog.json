@@ -1,0 +1,413 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "id": "claude-code",
+      "label": "Claude Code",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/claude-code.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 10,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/demo-video/assets/adapter-promo/sources/claude-code.svg"
+      }
+    },
+    {
+      "id": "codex",
+      "label": "Codex",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/codex.svg",
+      "darkIcon": "assets/icons/adapters/codex-dark.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 20,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/demo-video/assets/adapter-promo/sources/codex.svg"
+      }
+    },
+    {
+      "id": "copilot",
+      "label": "GitHub Copilot",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/copilot.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 30,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/demo-video/assets/adapter-promo/sources/copilot.svg"
+      }
+    },
+    {
+      "id": "gemini",
+      "label": "Gemini CLI",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/gemini.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 40,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/demo-video/assets/adapter-promo/sources/gemini.svg"
+      }
+    },
+    {
+      "id": "kimi",
+      "label": "Kimi CLI",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/kimi.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 50,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/demo-video/assets/adapter-promo/sources/kimi.svg"
+      }
+    },
+    {
+      "id": "opencode",
+      "label": "OpenCode",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/opencode.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 60,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/demo-video/assets/adapter-promo/sources/opencode.svg"
+      }
+    },
+    {
+      "id": "openai",
+      "label": "OpenAI",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/openai.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 10,
+      "themeAdaptive": true,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/openai.svg"
+      }
+    },
+    {
+      "id": "deepseek",
+      "label": "DeepSeek",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/deepseek.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 20,
+      "themeAdaptive": true,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/deepseek.svg"
+      }
+    },
+    {
+      "id": "moonshot",
+      "label": "Moonshot",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/moonshot.ico",
+      "enabled": true,
+      "featured": true,
+      "priority": 30,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/moonshot.ico"
+      }
+    },
+    {
+      "id": "minimax",
+      "label": "MiniMax",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/minimax.png",
+      "enabled": true,
+      "featured": true,
+      "priority": 40,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/minimax.png"
+      }
+    },
+    {
+      "id": "qwen",
+      "label": "Qwen",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/qwen.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 50,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/qwen.svg"
+      }
+    },
+    {
+      "id": "zhipu",
+      "label": "Zhipu GLM",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/zhipu.png",
+      "enabled": true,
+      "featured": false,
+      "priority": 60,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/zhipu.png"
+      }
+    },
+    {
+      "id": "anthropic",
+      "label": "Anthropic",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/anthropic.png",
+      "enabled": true,
+      "featured": false,
+      "priority": 70,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/anthropic.png"
+      }
+    },
+    {
+      "id": "aws",
+      "label": "AWS Bedrock",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/aws.png",
+      "enabled": true,
+      "featured": false,
+      "priority": 80,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/aws.png"
+      }
+    },
+    {
+      "id": "azure",
+      "label": "Azure AI",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/azure.ico",
+      "enabled": true,
+      "featured": false,
+      "priority": 90,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/azure.ico"
+      }
+    },
+    {
+      "id": "gemini-models",
+      "label": "Google Gemini",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/gemini.png",
+      "enabled": true,
+      "featured": false,
+      "priority": 100,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/gemini.png"
+      }
+    },
+    {
+      "id": "kimi-code",
+      "label": "Kimi Code",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/kimi.svg",
+      "darkIcon": "assets/icons/model-services/kimi-dark.svg",
+      "enabled": true,
+      "featured": false,
+      "priority": 110,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/kimi.svg"
+      }
+    },
+    {
+      "id": "litellm",
+      "label": "LiteLLM",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/litellm.png",
+      "enabled": true,
+      "featured": false,
+      "priority": 120,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/litellm.png"
+      }
+    },
+    {
+      "id": "micu",
+      "label": "MiCU",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/micu.png",
+      "enabled": true,
+      "featured": false,
+      "priority": 130,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/micu.png"
+      }
+    },
+    {
+      "id": "openrouter",
+      "label": "OpenRouter",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/openrouter.ico",
+      "enabled": true,
+      "featured": false,
+      "priority": 140,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/openrouter.ico"
+      }
+    },
+    {
+      "id": "portkey",
+      "label": "Portkey",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/portkey.png",
+      "enabled": true,
+      "featured": false,
+      "priority": 150,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/portkey.png"
+      }
+    },
+    {
+      "id": "requesty",
+      "label": "Requesty",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/requesty.ico",
+      "enabled": true,
+      "featured": false,
+      "priority": 160,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/requesty.ico"
+      }
+    },
+    {
+      "id": "vercel",
+      "label": "Vercel AI Gateway",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/vercel.png",
+      "enabled": true,
+      "featured": false,
+      "priority": 170,
+      "themeAdaptive": true,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/vercel.png"
+      }
+    },
+    {
+      "id": "yunwu",
+      "label": "Yunwu",
+      "kind": "model-service",
+      "icon": "assets/icons/model-services/yunwu.png",
+      "enabled": true,
+      "featured": false,
+      "priority": 180,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/client/src/assets/model-providers/yunwu.png"
+      }
+    },
+    {
+      "id": "telegram",
+      "label": "Telegram",
+      "kind": "channel",
+      "icon": "assets/icons/channels/telegram.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 10,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/channels/telegram.svg"
+      }
+    },
+    {
+      "id": "lark",
+      "label": "Lark / Feishu",
+      "kind": "channel",
+      "icon": "assets/icons/channels/lark.png",
+      "enabled": true,
+      "featured": true,
+      "priority": 20,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "apps/relay-admin/src/login/assets/feishu-logo.png"
+      }
+    },
+    {
+      "id": "wechat",
+      "label": "WeChat",
+      "kind": "channel",
+      "icon": "assets/icons/channels/wechat.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 30,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/channels/wechat.svg"
+      }
+    },
+    {
+      "id": "wecom",
+      "label": "WeCom",
+      "kind": "channel",
+      "icon": "assets/icons/channels/wecom.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 40,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/channels/wecom.svg"
+      }
+    },
+    {
+      "id": "qq-channel",
+      "label": "QQ Channel",
+      "kind": "channel",
+      "icon": "assets/icons/channels/qq-channel.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 50,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/channels/qq.svg"
+      }
+    },
+    {
+      "id": "imessage",
+      "label": "iMessage",
+      "kind": "channel",
+      "icon": "assets/icons/channels/imessage.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 60,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/channels/imessage.svg"
+      }
+    },
+    {
+      "id": "oneworks",
+      "label": "One Works Internal",
+      "kind": "channel",
+      "icon": "assets/icons/channels/oneworks.svg",
+      "enabled": false,
+      "featured": false,
+      "priority": 999,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/demo-video/assets/adapter-promo/sources/oneworks.svg"
+      }
+    }
+  ]
+}

@@ -3,13 +3,16 @@
   "scenes": [
     {
       "name": "github-org-readme",
+      "label": "GitHub Org README",
       "article": 1,
+      "frozen": true,
       "width": 1292,
       "height": 640,
       "themes": ["light", "dark"]
     },
     {
       "name": "github-social-preview",
+      "label": "GitHub Social Preview",
       "article": 2,
       "width": 1280,
       "height": 640,
@@ -17,6 +20,7 @@
     },
     {
       "name": "homepage-open-graph",
+      "label": "Homepage Open Graph",
       "article": 3,
       "width": 1200,
       "height": 600,
@@ -24,6 +28,7 @@
     },
     {
       "name": "vscode-marketplace",
+      "label": "VS Code Marketplace",
       "article": 4,
       "width": 1280,
       "height": 640,
@@ -31,6 +36,7 @@
     },
     {
       "name": "chrome-web-store",
+      "label": "Chrome Web Store",
       "article": 5,
       "width": 1280,
       "height": 640,
@@ -38,9 +44,18 @@
     },
     {
       "name": "npm-readme-header",
+      "label": "npm README Header",
       "article": 6,
       "width": 1280,
       "height": 640,
+      "themes": ["light", "dark"]
+    },
+    {
+      "name": "x-profile-header",
+      "label": "X / Twitter Profile Header",
+      "article": 7,
+      "width": 1500,
+      "height": 500,
       "themes": ["light", "dark"]
     }
   ]

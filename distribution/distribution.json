@@ -1,0 +1,468 @@
+{
+  "schemaVersion": 1,
+  "surfaces": [
+    {
+      "id": "github-org-avatar",
+      "platform": "GitHub",
+      "surface": "Organization 头像",
+      "status": "manual",
+      "preview": "apps/client/public/pwa-icon-512.png",
+      "artifacts": [
+        "apps/client/public/pwa-icon-512.png"
+      ],
+      "quickLinks": [
+        {
+          "label": "Org 设置",
+          "url": "https://github.com/organizations/oneworks-ai/settings/profile"
+        },
+        {
+          "label": "源文件",
+          "url": "https://github.com/oneworks-ai/app/blob/main/apps/client/public/pwa-icon-512.png"
+        }
+      ],
+      "updateMethod": [
+        "在 app 仓库运行品牌资产同步与清单校验。",
+        "由 Organization owner 在 Org 设置中手动上传 512 × 512 PNG。"
+      ],
+      "pitfalls": [
+        "GitHub 不会从 README 或仓库文件自动同步 Organization 头像。",
+        "上传后 CDN 可能短时间保留旧头像；不要为此重复上传不同文件。"
+      ],
+      "automation": "生成与校验已自动化，平台上传仍是人工步骤。"
+    },
+    {
+      "id": "github-org-readme",
+      "platform": "GitHub",
+      "surface": "Org Profile README Header",
+      "status": "automated",
+      "studioScene": "github-org-readme",
+      "preview": {
+        "light": "dist/github-org-readme-light.png",
+        "dark": "dist/github-org-readme-dark.png"
+      },
+      "artifacts": [
+        "assets/github-profile/profile/brand-header-light.png",
+        "assets/github-profile/profile/brand-header-dark.png"
+      ],
+      "deployments": [
+        {
+          "theme": "light",
+          "target": "assets/brand/distribution/github-org-readme-light.png"
+        },
+        {
+          "theme": "dark",
+          "target": "assets/brand/distribution/github-org-readme-dark.png"
+        },
+        {
+          "theme": "light",
+          "target": "assets/github-profile/profile/brand-header-light.png"
+        },
+        {
+          "theme": "dark",
+          "target": "assets/github-profile/profile/brand-header-dark.png"
+        }
+      ],
+      "quickLinks": [
+        {
+          "label": "公开页面",
+          "url": "https://github.com/oneworks-ai"
+        },
+        {
+          "label": "维护仓库",
+          "url": "https://github.com/oneworks-ai/.github"
+        }
+      ],
+      "updateMethod": [
+        "Brand Studio 生成亮色与暗色两张精确 PNG。",
+        "同步到 .github/profile，并由 README 的 picture 元素按主题选择。"
+      ],
+      "pitfalls": [
+        "README Header 与 Repository Social Preview 是两个独立入口。",
+        "必须保留亮暗两张图及 picture 的 prefers-color-scheme 顺序。"
+      ],
+      "automation": "场景导出、哈希校验和仓库文件同步可由流水线完成。"
+    },
+    {
+      "id": "github-repository-social-preview",
+      "platform": "GitHub",
+      "surface": "Repository Social Preview",
+      "status": "manual",
+      "studioScene": "github-social-preview",
+      "preview": {
+        "light": "dist/github-social-preview-light.png",
+        "dark": "dist/github-social-preview-dark.png"
+      },
+      "artifacts": [
+        "assets/brand/distribution/github-social-preview-light.png",
+        "assets/brand/distribution/github-social-preview-dark.png"
+      ],
+      "deployments": [
+        {
+          "theme": "light",
+          "target": "assets/brand/distribution/github-social-preview-light.png"
+        },
+        {
+          "theme": "dark",
+          "target": "assets/brand/distribution/github-social-preview-dark.png"
+        }
+      ],
+      "quickLinks": [
+        {
+          "label": "仓库设置",
+          "url": "https://github.com/oneworks-ai/app/settings"
+        },
+        {
+          "label": "源文件",
+          "url": "https://github.com/oneworks-ai/app/tree/main/assets/brand/distribution"
+        }
+      ],
+      "updateMethod": [
+        "生成并校验 Social Preview 场景。",
+        "仓库管理员在 Settings → General → Social preview 手动上传选定主题的 PNG。"
+      ],
+      "pitfalls": [
+        "仓库内提交图片不会改变 GitHub 的 Social Preview。",
+        "平台只使用一张上传图，不会根据访客主题自动切换亮暗版本。"
+      ],
+      "automation": "生成已自动化；GitHub 设置页上传仍是人工步骤。"
+    },
+    {
+      "id": "homepage-open-graph",
+      "platform": "Homepage",
+      "surface": "Open Graph",
+      "status": "automated",
+      "studioScene": "homepage-open-graph",
+      "preview": {
+        "light": "dist/homepage-open-graph-light.png",
+        "dark": "dist/homepage-open-graph-dark.png"
+      },
+      "artifacts": [
+        "assets/homepage/apps/homepage/src/assets/social/social-card.png"
+      ],
+      "deployments": [
+        {
+          "theme": "light",
+          "target": "assets/brand/distribution/homepage-open-graph-light.png"
+        },
+        {
+          "theme": "dark",
+          "target": "assets/brand/distribution/homepage-open-graph-dark.png"
+        },
+        {
+          "theme": "light",
+          "target": "assets/homepage/apps/homepage/src/assets/social/social-card.png"
+        }
+      ],
+      "quickLinks": [
+        {
+          "label": "官网",
+          "url": "https://oneworks.cloud"
+        },
+        {
+          "label": "维护仓库",
+          "url": "https://github.com/oneworks-ai/oneworks-ai.github.io"
+        }
+      ],
+      "updateMethod": [
+        "生成 Homepage Open Graph 场景并同步为官网 social-card.png。",
+        "合入 homepage 仓库后由 Pages 流水线发布。"
+      ],
+      "pitfalls": [
+        "社交平台会缓存 OG 图片，线上文件更新后仍可能暂时显示旧图。",
+        "生产页面必须引用绝对 URL，不能依赖本地预览路径。"
+      ],
+      "automation": "资源同步与网站部署均可由流水线完成。"
+    },
+    {
+      "id": "vscode-marketplace",
+      "platform": "VS Code",
+      "surface": "Marketplace Header",
+      "status": "automated",
+      "studioScene": "vscode-marketplace",
+      "preview": {
+        "light": "dist/vscode-marketplace-light.png",
+        "dark": "dist/vscode-marketplace-dark.png"
+      },
+      "artifacts": [
+        "apps/vscode-extension/assets/vscode-marketplace-light.png",
+        "apps/vscode-extension/assets/vscode-marketplace-dark.png"
+      ],
+      "deployments": [
+        {
+          "theme": "light",
+          "target": "assets/brand/distribution/vscode-marketplace-light.png"
+        },
+        {
+          "theme": "dark",
+          "target": "assets/brand/distribution/vscode-marketplace-dark.png"
+        },
+        {
+          "theme": "light",
+          "target": "apps/vscode-extension/assets/vscode-marketplace-light.png"
+        },
+        {
+          "theme": "dark",
+          "target": "apps/vscode-extension/assets/vscode-marketplace-dark.png"
+        }
+      ],
+      "quickLinks": [
+        {
+          "label": "Marketplace",
+          "url": "https://marketplace.visualstudio.com/items?itemName=oneworks-ai.oneworks-vscode-extension"
+        },
+        {
+          "label": "扩展源码",
+          "url": "https://github.com/oneworks-ai/app/tree/main/apps/vscode-extension"
+        }
+      ],
+      "updateMethod": [
+        "生成 Marketplace 场景并同步到扩展 assets。",
+        "随 VSIX 的 README 与扩展发布流程一同更新。"
+      ],
+      "pitfalls": [
+        "Marketplace 展示来自已发布的 VSIX，不会读取 main 分支的未发布文件。",
+        "发布前需确认 README 在 Marketplace 的远程图片与相对路径解析正常。"
+      ],
+      "automation": "文件同步与 VSIX 构建已自动化；正式发布受 release gate 控制。"
+    },
+    {
+      "id": "chrome-web-store",
+      "platform": "Chrome",
+      "surface": "Web Store Promotional Image",
+      "status": "hybrid",
+      "studioScene": "chrome-web-store",
+      "preview": {
+        "light": "dist/chrome-web-store-light.png",
+        "dark": "dist/chrome-web-store-dark.png"
+      },
+      "artifacts": [
+        "packages/plugins/external-browser-driver/assets/chrome-web-store-light.png",
+        "packages/plugins/external-browser-driver/assets/chrome-web-store-dark.png"
+      ],
+      "deployments": [
+        {
+          "theme": "light",
+          "target": "assets/brand/distribution/chrome-web-store-light.png"
+        },
+        {
+          "theme": "dark",
+          "target": "assets/brand/distribution/chrome-web-store-dark.png"
+        },
+        {
+          "theme": "light",
+          "target": "packages/plugins/external-browser-driver/assets/chrome-web-store-light.png"
+        },
+        {
+          "theme": "dark",
+          "target": "packages/plugins/external-browser-driver/assets/chrome-web-store-dark.png"
+        }
+      ],
+      "quickLinks": [
+        {
+          "label": "开发者后台",
+          "url": "https://chrome.google.com/webstore/devconsole/"
+        },
+        {
+          "label": "扩展源码",
+          "url": "https://github.com/oneworks-ai/app/tree/main/packages/plugins/external-browser-driver"
+        }
+      ],
+      "updateMethod": [
+        "生成 Web Store 场景并同步到插件 assets。",
+        "扩展 release 流水线上传包；商店 listing 素材按后台要求确认或更新。"
+      ],
+      "pitfalls": [
+        "扩展 ZIP 发布与商店 listing 图片更新是不同操作。",
+        "Chrome Web Store 审核和缓存可能让新素材晚于代码版本生效。"
+      ],
+      "automation": "扩展打包与提审已自动化；listing 素材可能仍需后台确认。"
+    },
+    {
+      "id": "npm-readme-header",
+      "platform": "npm",
+      "surface": "Package README Header",
+      "status": "automated",
+      "studioScene": "npm-readme-header",
+      "preview": {
+        "light": "dist/npm-readme-header-light.png",
+        "dark": "dist/npm-readme-header-dark.png"
+      },
+      "artifacts": [
+        "apps/bootstrap/assets/npm-readme-header-light.png",
+        "apps/bootstrap/assets/npm-readme-header-dark.png"
+      ],
+      "deployments": [
+        {
+          "theme": "light",
+          "target": "assets/brand/distribution/npm-readme-header-light.png"
+        },
+        {
+          "theme": "dark",
+          "target": "assets/brand/distribution/npm-readme-header-dark.png"
+        },
+        {
+          "theme": "light",
+          "target": "apps/bootstrap/assets/npm-readme-header-light.png"
+        },
+        {
+          "theme": "dark",
+          "target": "apps/bootstrap/assets/npm-readme-header-dark.png"
+        }
+      ],
+      "quickLinks": [
+        {
+          "label": "npm 组织",
+          "url": "https://www.npmjs.com/org/oneworks"
+        },
+        {
+          "label": "发布仓库",
+          "url": "https://github.com/oneworks-ai/app"
+        }
+      ],
+      "updateMethod": [
+        "生成 npm README Header 并同步到需要打包的 workspace。",
+        "随对应 npm package 的 README 和版本发布。"
+      ],
+      "pitfalls": [
+        "npm 页面展示的是已发布 tarball 内的 README，不会跟随仓库 main 实时更新。",
+        "README 图片必须使用 npm 页面可访问的 URL 或随包发布的可靠路径。"
+      ],
+      "automation": "生成与同步已自动化；只有 package release 后线上才更新。"
+    },
+    {
+      "id": "x-profile-header",
+      "platform": "X / Twitter",
+      "surface": "Profile Header",
+      "status": "manual",
+      "studioScene": "x-profile-header",
+      "preview": {
+        "light": "dist/x-profile-header-light.png",
+        "dark": "dist/x-profile-header-dark.png"
+      },
+      "artifacts": [
+        "assets/brand-studio/dist/x-profile-header-light.png",
+        "assets/brand-studio/dist/x-profile-header-dark.png"
+      ],
+      "quickLinks": [
+        {
+          "label": "公开主页",
+          "url": "https://x.com/OneWorksAI"
+        },
+        {
+          "label": "编辑资料",
+          "url": "https://x.com/settings/profile"
+        }
+      ],
+      "updateMethod": [
+        "Brand Studio 以 1500 × 500 精确导出亮暗横幅。",
+        "账号管理员在 X 的 Edit profile 中上传选定主题的 PNG。"
+      ],
+      "pitfalls": [
+        "X 头像会遮挡横幅左下区域，主体和关键信息必须避开安全区。",
+        "不同屏幕会轻微裁切横幅边缘，不能把文字或标记贴近四周。"
+      ],
+      "automation": "场景生成、哈希校验和下载已自动化；X 平台上传仍是人工步骤。"
+    },
+    {
+      "id": "pwa-web-icons",
+      "platform": "Web / PWA",
+      "surface": "Favicon、PWA 与 Apple Touch",
+      "status": "automated",
+      "preview": {
+        "light": "apps/client/public/favicon-linear-light.svg",
+        "dark": "apps/client/public/favicon-linear-dark.svg"
+      },
+      "artifacts": [
+        "apps/client/public/favicon-linear-light.svg",
+        "apps/client/public/favicon-linear-dark.svg",
+        "apps/client/public/pwa-icon-192.png",
+        "apps/client/public/pwa-icon-512.png",
+        "apps/client/public/apple-touch-icon.png"
+      ],
+      "quickLinks": [
+        {
+          "label": "PWA",
+          "url": "https://oneworks.cloud/pwa/"
+        },
+        {
+          "label": "部署仓库",
+          "url": "https://github.com/oneworks-ai/pwa"
+        }
+      ],
+      "updateMethod": [
+        "从 Linear brand profile 同步 SVG、PNG、PWA 尺寸与 Apple Touch 图标。",
+        "客户端与独立 PWA 构建均消费同一批已校验文件。"
+      ],
+      "pitfalls": [
+        "Safari、iOS 主屏和浏览器 favicon 都有独立缓存，不能只验证一个入口。",
+        "Apple Touch 与 PWA maskable 图标需要稳定底板，不能直接使用透明标记。"
+      ],
+      "automation": "生成、复制、清单校验和 PWA 部署均可自动化。"
+    },
+    {
+      "id": "desktop-icons",
+      "platform": "Desktop",
+      "surface": "macOS、Windows 与 Linux App Icon",
+      "status": "automated",
+      "preview": "apps/desktop/build/icon.png",
+      "artifacts": [
+        "apps/desktop/build/icon.icns",
+        "apps/desktop/build/icon.ico",
+        "apps/desktop/build/icon.png",
+        "apps/desktop/build/icon.icon"
+      ],
+      "quickLinks": [
+        {
+          "label": "Releases",
+          "url": "https://github.com/oneworks-ai/app/releases"
+        },
+        {
+          "label": "Desktop 源码",
+          "url": "https://github.com/oneworks-ai/app/tree/main/apps/desktop"
+        }
+      ],
+      "updateMethod": [
+        "由 Desktop icon sync 从 Linear profile 生成各平台容器与尺寸。",
+        "安装包工作流在打包前校验原生图标闭包。"
+      ],
+      "pitfalls": [
+        "macOS Icon Composer、ICNS、Windows ICO 和 Linux PNG 不是同一种容器。",
+        "只替换源 PNG 不代表安装包和 Dock / Start Menu 缓存已经更新。"
+      ],
+      "automation": "平台文件生成与安装包校验均已自动化。"
+    },
+    {
+      "id": "android-launcher",
+      "platform": "Android",
+      "surface": "Launcher Adaptive Icon",
+      "status": "automated",
+      "preview": {
+        "light": "apps/android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png",
+        "dark": "apps/android/app/src/main/res/drawable-night-nodpi/ic_launcher_foreground.png"
+      },
+      "artifacts": [
+        "apps/android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png",
+        "apps/android/app/src/main/res/drawable-night-nodpi/ic_launcher_foreground.png"
+      ],
+      "quickLinks": [
+        {
+          "label": "Android 源码",
+          "url": "https://github.com/oneworks-ai/app/tree/main/apps/android"
+        },
+        {
+          "label": "品牌清单",
+          "url": "https://github.com/oneworks-ai/app/blob/main/assets/brand/brand-assets.manifest.json"
+        }
+      ],
+      "updateMethod": [
+        "品牌同步生成日间与夜间前景资源，Android 工程继续提供 adaptive icon 背景和 mask。",
+        "构建前通过品牌清单校验文件哈希。"
+      ],
+      "pitfalls": [
+        "Android Launcher 会按设备厂商 mask 裁切，内容必须留在 adaptive icon 安全区。",
+        "模拟器 Launcher 可能缓存旧图标；验证时需要重新安装而不是只热更新资源。"
+      ],
+      "automation": "资源生成和哈希校验已自动化；设备视觉验证仍需真实安装。"
+    }
+  ]
+}
