@@ -4,9 +4,13 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "compile": "node scripts/compile.mjs",
     "dev": "node scripts/serve.mjs",
-    "render": "node scripts/render.mjs",
-    "check": "node scripts/check.mjs"
+    "render": "node scripts/compile.mjs && node scripts/render.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node --test scripts/*.test.mjs",
+    "sync:catalog": "node scripts/sync-product-catalog.mjs",
+    "sync:distribution": "node scripts/sync-distribution-assets.mjs"
   },
   "engines": {
     "node": ">=22"

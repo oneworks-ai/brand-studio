@@ -14,8 +14,11 @@ import { resolve } from 'node:path'
 import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
+import { catalogInputs, readCatalog, readStudioConfig, resolveContained } from './catalog.mjs'
+
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
-const config = JSON.parse(readFileSync(resolve(root, 'studio.config.json'), 'utf8'))
+const config = readStudioConfig()
+const catalog = readCatalog()
 const sourcePath = resolve(root, 'index.html')
 const outputDirectory = resolve(root, 'dist')
 const chrome = process.env.CHROME_BIN ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
@@ -91,8 +94,21 @@ try {
   for (const scene of config.scenes) {
     for (const theme of scene.themes) {
       const filename = `${scene.name}-${theme}.png`
-      const outputPath = resolve(outputDirectory, filename)
-      const url = `http://${host}:${port}/?scene=${encodeURIComponent(scene.name)}&theme=${theme}&export=1`
+      const outputPath = resolveContained(outputDirectory, filename, 'render output')
+      if (scene.frozen === true) {
+        if (!existsSync(outputPath)) throw new Error(`Frozen scene artifact is missing: ${filename}`)
+        const bytes = readFileSync(outputPath)
+        artifacts.push({
+          file: `dist/${filename}`,
+          height: scene.height,
+          scene: scene.name,
+          sha256: createHash('sha256').update(bytes).digest('hex'),
+          theme,
+          width: scene.width
+        })
+        continue
+      }
+      const url = `http://${host}:${port}/?scene=${encodeURIComponent(scene.name)}&theme=${theme}&export=1&width=${scene.width}&height=${scene.height}`
       rmSync(outputPath, { force: true })
       const chromeProfile = mkdtempSync(resolve(tmpdir(), 'oneworks-brand-studio-'))
       const browserProcess = spawn(chrome, [
@@ -133,6 +149,9 @@ try {
 const sourceBytes = readFileSync(sourcePath)
 const manifest = {
   schemaVersion: 1,
+  catalog: 'catalog/catalog.json',
+  catalogEntries: catalog.entries.length,
+  inputs: catalogInputs(catalog),
   source: 'index.html',
   sourceSha256: createHash('sha256').update(sourceBytes).digest('hex'),
   artifacts

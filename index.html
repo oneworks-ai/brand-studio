@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<title>Oneworks Brand Rollout Plan</title>
+<title>One Works Brand Studio</title>
 <style>
 :root {
   color-scheme: light dark;
@@ -873,9 +873,31 @@ svg.lucide {
 .text-destructive {
   color: var(--destructive);
 }
-html>body{padding:0}
+html > body { padding: 16px; }
+@media (max-width: 620px) {
+  html > body { padding: 10px; }
+}
 </style>
+  <script>
+    (() => {
+      const parameters = new URLSearchParams(window.location.search)
+      if (parameters.get('export') === '1') {
+        document.documentElement.dataset.brandExportPending = 'true'
+        return
+      }
+      document.documentElement.dataset.studioView = parameters.get('view') === 'distribution'
+        ? 'distribution'
+        : 'studio'
+    })()
+  </script>
   <style id="brand-studio-export-style">
+    html[data-brand-export-pending="true"] body {
+      background: transparent !important;
+      opacity: 0;
+    }
+    html[data-brand-export-pending="true"][data-brand-scene-ready="true"] body {
+      opacity: 1;
+    }
     html[data-brand-export="true"],
     html[data-brand-export="true"] body {
       height: 100%;
@@ -885,7 +907,10 @@ html>body{padding:0}
       width: 100%;
     }
     html[data-brand-export="true"] body {
+      align-items: center;
       background: transparent;
+      display: flex;
+      justify-content: center;
     }
     html[data-brand-export="true"] #ow-brand-rollout-plan[data-brand-export="true"] {
       background: transparent;
@@ -905,12 +930,14 @@ html>body{padding:0}
       visibility: visible;
     }
     html[data-brand-export="true"] #ow-brand-rollout-plan[data-brand-export="true"] [data-brand-export-target="true"] {
-      aspect-ratio: auto;
+      aspect-ratio: var(--brand-scene-width) / var(--brand-scene-height);
       border: 0;
-      height: 100%;
-      inset: 0;
+      height: min(100vh, calc(100vw / var(--brand-scene-ratio)));
+      left: 50%;
       position: fixed;
-      width: 100%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(100vw, calc(100vh * var(--brand-scene-ratio)));
       z-index: 2147483647;
     }
   </style>
@@ -918,29 +945,483 @@ html>body{padding:0}
 <body>
 <div id="ow-brand-rollout-plan" data-preview-mode="dark">
   <style>
+    html[data-studio-view] body {
+      height: 100vh;
+      overflow: hidden;
+    }
     #ow-brand-rollout-plan {
       color: var(--foreground);
+      display: grid;
+      gap: 10px;
+      grid-template-rows: auto minmax(0, 1fr);
+      height: calc(100vh - 32px);
       max-width: 100%;
     }
     #ow-brand-rollout-plan * { box-sizing: border-box; }
     #ow-brand-rollout-plan h2,
     #ow-brand-rollout-plan h3 { margin: 0; }
-    #ow-brand-rollout-plan .plan-head {
-      align-items: flex-end;
-      display: flex;
-      gap: 16px;
-      justify-content: space-between;
-      margin-bottom: 14px;
-    }
-    #ow-brand-rollout-plan .plan-head p,
     #ow-brand-rollout-plan .section-intro,
     #ow-brand-rollout-plan .resource-meta,
     #ow-brand-rollout-plan .surface-note,
     #ow-brand-rollout-plan .plan-foot {
       color: var(--muted-foreground);
     }
-    #ow-brand-rollout-plan .plan-head p { margin: 4px 0 0; }
     #ow-brand-rollout-plan .preview-controls { flex: 0 0 auto; }
+    #ow-brand-rollout-plan .studio-view-switch {
+      align-items: center;
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+      margin-bottom: 0;
+    }
+    #ow-brand-rollout-plan .studio-view-switch .btn[aria-current="page"] {
+      background: color-mix(in srgb, var(--foreground) 10%, var(--secondary));
+      border-color: color-mix(in srgb, var(--foreground) 22%, var(--border));
+      color: var(--foreground);
+    }
+    html[data-studio-view="distribution"] #ow-brand-rollout-plan .studio-console,
+    html[data-studio-view="studio"] #ow-brand-rollout-plan .distribution-view {
+      display: none;
+    }
+    #ow-brand-rollout-plan .studio-console {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-2xl);
+      display: grid;
+      grid-template-columns: minmax(244px, 292px) minmax(0, 1fr);
+      height: auto;
+      min-height: 0;
+      overflow: hidden;
+    }
+    #ow-brand-rollout-plan .studio-console__sidebar {
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow: auto;
+      padding: 18px;
+    }
+    #ow-brand-rollout-plan .studio-console__field {
+      display: grid;
+      gap: 7px;
+    }
+    #ow-brand-rollout-plan .studio-console__field > span {
+      color: var(--muted-foreground);
+      font-size: 12px;
+    }
+    #ow-brand-rollout-plan .studio-scene-grid {
+      display: grid;
+      gap: 7px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    #ow-brand-rollout-plan .studio-scene-card {
+      appearance: none;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      color: var(--foreground);
+      cursor: pointer;
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+      overflow: hidden;
+      padding: 5px;
+      text-align: left;
+    }
+    #ow-brand-rollout-plan .studio-scene-card:hover {
+      background: color-mix(in srgb, var(--foreground) 5%, transparent);
+    }
+    #ow-brand-rollout-plan .studio-scene-card[aria-pressed="true"] {
+      background: color-mix(in srgb, var(--foreground) 9%, transparent);
+      border-color: color-mix(in srgb, var(--foreground) 32%, var(--border));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--foreground) 12%, transparent);
+    }
+    #ow-brand-rollout-plan .studio-scene-card:focus-visible {
+      outline: 2px solid var(--ring);
+      outline-offset: 2px;
+    }
+    #ow-brand-rollout-plan .studio-scene-card > img {
+      aspect-ratio: 2 / 1;
+      background: color-mix(in srgb, var(--foreground) 3%, var(--background));
+      border-radius: calc(var(--radius-lg) - 4px);
+      display: block;
+      object-fit: cover;
+      width: 100%;
+    }
+    #ow-brand-rollout-plan .studio-scene-card > span {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+      padding: 0 3px 3px;
+    }
+    #ow-brand-rollout-plan .studio-scene-card strong {
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #ow-brand-rollout-plan .studio-scene-card small {
+      color: var(--muted-foreground);
+      font: 8px/1.3 var(--font-mono);
+    }
+    #ow-brand-rollout-plan .studio-console__actions {
+      display: grid;
+      gap: 8px;
+      margin-top: auto;
+    }
+    #ow-brand-rollout-plan .studio-console__actions .btn { width: 100%; }
+    #ow-brand-rollout-plan .studio-console__actions .btn-primary {
+      min-height: 38px;
+    }
+    #ow-brand-rollout-plan .studio-console__actions svg {
+      height: 15px;
+      width: 15px;
+    }
+    #ow-brand-rollout-plan .studio-console__asset {
+      display: grid;
+      gap: 6px;
+      padding-top: 8px;
+    }
+    #ow-brand-rollout-plan .studio-console__asset-head {
+      align-items: center;
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+    }
+    #ow-brand-rollout-plan .studio-console__asset-head strong {
+      font-size: 12px;
+      font-weight: 600;
+    }
+    #ow-brand-rollout-plan .studio-console__status {
+      align-items: center;
+      color: var(--muted-foreground);
+      display: inline-flex;
+      font-size: 10px;
+      gap: 5px;
+    }
+    #ow-brand-rollout-plan .studio-console__status::before {
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 15%, transparent);
+      content: "";
+      height: 6px;
+      width: 6px;
+    }
+    #ow-brand-rollout-plan .studio-console__status[data-ready="false"]::before {
+      background: var(--yellow);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--yellow) 15%, transparent);
+    }
+    #ow-brand-rollout-plan .studio-console__filename {
+      color: var(--foreground);
+      font: 11px/1.4 var(--font-mono);
+      overflow-wrap: anywhere;
+    }
+    #ow-brand-rollout-plan .studio-console__meta {
+      color: var(--muted-foreground);
+      font: 11px/1.5 var(--font-mono);
+      overflow-wrap: anywhere;
+    }
+    #ow-brand-rollout-plan .studio-console__advanced {
+      border-top: 1px solid var(--border);
+      color: var(--muted-foreground);
+      font-size: 11px;
+      padding-top: 8px;
+    }
+    #ow-brand-rollout-plan .studio-console__advanced summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 2px 0;
+    }
+    #ow-brand-rollout-plan .studio-console__advanced summary::-webkit-details-marker { display: none; }
+    #ow-brand-rollout-plan .studio-console__advanced summary::after {
+      content: "＋";
+      float: right;
+    }
+    #ow-brand-rollout-plan .studio-console__advanced[open] summary::after { content: "−"; }
+    #ow-brand-rollout-plan .studio-console__advanced-body {
+      display: grid;
+      gap: 8px;
+      padding-top: 9px;
+    }
+    #ow-brand-rollout-plan .studio-console__advanced-body .btn { width: 100%; }
+    #ow-brand-rollout-plan .studio-console__preview {
+      background:
+        radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--primary) 8%, transparent), transparent 50%),
+        color-mix(in srgb, var(--foreground) 3%, var(--background));
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-width: 0;
+      min-height: 0;
+      padding: 14px;
+    }
+    #ow-brand-rollout-plan .studio-console__preview-head {
+      align-items: center;
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      min-width: 0;
+      padding: 0 2px 12px;
+    }
+    #ow-brand-rollout-plan .studio-console__preview-head strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #ow-brand-rollout-plan .studio-console__preview-head span {
+      color: var(--muted-foreground);
+      flex: none;
+      font: 10px/1.4 var(--font-mono);
+    }
+    #ow-brand-rollout-plan .studio-console__frame-wrap {
+      align-items: center;
+      display: flex;
+      justify-content: center;
+      min-height: 0;
+    }
+    #ow-brand-rollout-plan .studio-console__frame {
+      border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+      box-shadow: 0 18px 50px rgb(0 0 0 / 18%);
+      display: block;
+      height: 100%;
+      width: 100%;
+    }
+    #ow-brand-rollout-plan .distribution-view {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-2xl);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-height: 0;
+      overflow: hidden;
+    }
+    #ow-brand-rollout-plan .distribution-toolbar {
+      align-items: flex-end;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      gap: 14px;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      padding: 18px;
+    }
+    #ow-brand-rollout-plan .distribution-toolbar__intro {
+      display: grid;
+      gap: 4px;
+    }
+    #ow-brand-rollout-plan .distribution-toolbar__intro h1 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+    #ow-brand-rollout-plan .distribution-toolbar__intro p,
+    #ow-brand-rollout-plan .distribution-empty {
+      color: var(--muted-foreground);
+      margin: 0;
+    }
+    #ow-brand-rollout-plan .distribution-toolbar__tools {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    #ow-brand-rollout-plan .distribution-search {
+      min-height: 28px;
+      min-width: 220px;
+      padding: 0 9px 0 29px;
+    }
+    #ow-brand-rollout-plan .distribution-search-wrap {
+      position: relative;
+    }
+    #ow-brand-rollout-plan .distribution-search-wrap > .studio-icon {
+      color: var(--muted-foreground);
+      left: 9px;
+      pointer-events: none;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1;
+    }
+    #ow-brand-rollout-plan .distribution-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    #ow-brand-rollout-plan .distribution-filters .btn[aria-pressed="true"] {
+      background: var(--foreground);
+      border-color: var(--foreground);
+      color: var(--background);
+    }
+    #ow-brand-rollout-plan .distribution-scroll {
+      min-height: 0;
+      overflow: auto;
+    }
+    #ow-brand-rollout-plan .distribution-list { display: grid; }
+    #ow-brand-rollout-plan .distribution-item { border-bottom: 1px solid var(--border); }
+    #ow-brand-rollout-plan .distribution-item:last-child { border-bottom: 0; }
+    #ow-brand-rollout-plan .distribution-item__main {
+      align-items: center;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 74px minmax(170px, .9fr) auto minmax(220px, 1.25fr) auto auto;
+      min-height: 76px;
+      padding: 12px 18px;
+    }
+    #ow-brand-rollout-plan .distribution-item__preview {
+      align-items: center;
+      background: color-mix(in srgb, var(--foreground) 4%, transparent);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      display: flex;
+      height: 46px;
+      justify-content: center;
+      overflow: hidden;
+      width: 70px;
+    }
+    #ow-brand-rollout-plan .distribution-item__preview img {
+      display: block;
+      height: 100%;
+      object-fit: contain;
+      padding: 3px;
+      width: 100%;
+    }
+    #ow-brand-rollout-plan .distribution-item__identity {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+    #ow-brand-rollout-plan .distribution-item__identity > span {
+      align-items: center;
+      color: var(--muted-foreground);
+      display: flex;
+      font-size: 10px;
+      gap: 5px;
+      text-transform: uppercase;
+    }
+    #ow-brand-rollout-plan .distribution-item__identity h2 {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    #ow-brand-rollout-plan .distribution-item__export {
+      align-items: center;
+      color: var(--muted-foreground);
+      display: flex;
+      font-size: 9px;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    #ow-brand-rollout-plan .distribution-item__export .studio-icon {
+      height: 11px;
+      width: 11px;
+    }
+    #ow-brand-rollout-plan .distribution-status {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      color: var(--muted-foreground);
+      font-size: 10px;
+      padding: 3px 8px;
+      white-space: nowrap;
+    }
+    #ow-brand-rollout-plan .distribution-status[data-status="automated"] {
+      border-color: color-mix(in srgb, var(--green) 28%, var(--border));
+      color: var(--green);
+    }
+    #ow-brand-rollout-plan .distribution-status[data-status="manual"] {
+      border-color: color-mix(in srgb, var(--yellow) 30%, var(--border));
+      color: color-mix(in srgb, var(--yellow) 75%, var(--foreground));
+    }
+    #ow-brand-rollout-plan .distribution-item__artifacts {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+    #ow-brand-rollout-plan .distribution-item__artifacts small {
+      color: var(--muted-foreground);
+      font-size: 9px;
+      line-height: 1.2;
+    }
+    #ow-brand-rollout-plan .distribution-item__artifacts code {
+      color: var(--muted-foreground);
+      font: 9px/1.35 var(--font-mono);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #ow-brand-rollout-plan .distribution-item__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      justify-content: flex-end;
+    }
+    #ow-brand-rollout-plan .distribution-item__actions .btn,
+    #ow-brand-rollout-plan .distribution-item__toggle {
+      font-size: 11px;
+    }
+    #ow-brand-rollout-plan .distribution-item__toggle::after { content: "＋"; margin-left: 2px; }
+    #ow-brand-rollout-plan .distribution-item__toggle[aria-expanded="true"]::after { content: "−"; }
+    #ow-brand-rollout-plan .studio-icon {
+      display: block;
+      flex: none;
+      height: 14px;
+      width: 14px;
+    }
+    #ow-brand-rollout-plan .distribution-item__details {
+      background: color-mix(in srgb, var(--foreground) 2.5%, transparent);
+      border-top: 1px solid var(--border);
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      padding: 14px 18px 16px;
+    }
+    #ow-brand-rollout-plan .distribution-item__details[hidden] { display: none; }
+    #ow-brand-rollout-plan .distribution-item__details h3 {
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    #ow-brand-rollout-plan .distribution-item__details :is(ol, ul) {
+      color: var(--muted-foreground);
+      display: grid;
+      font-size: 11px;
+      gap: 4px;
+      margin: 0;
+      padding-left: 18px;
+    }
+    #ow-brand-rollout-plan .distribution-item__details p {
+      color: var(--muted-foreground);
+      font-size: 11px;
+      grid-column: 1 / -1;
+      margin: 0;
+    }
+    #ow-brand-rollout-plan .distribution-item__details p strong {
+      color: var(--foreground);
+      margin-right: 8px;
+    }
+    #ow-brand-rollout-plan .distribution-empty {
+      padding: 32px 18px;
+      text-align: center;
+    }
+    #ow-brand-rollout-plan .studio-details {
+      border-top: 1px solid var(--border);
+      margin-top: 18px;
+      padding-top: 2px;
+    }
+    #ow-brand-rollout-plan .studio-details > summary {
+      align-items: center;
+      cursor: pointer;
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      list-style: none;
+      padding: 12px 2px;
+    }
+    #ow-brand-rollout-plan .studio-details > summary::-webkit-details-marker { display: none; }
+    #ow-brand-rollout-plan .studio-details > summary strong { font-weight: 600; }
+    #ow-brand-rollout-plan .studio-details > summary::after {
+      color: var(--muted-foreground);
+      content: "展开";
+      font-size: 11px;
+    }
+    #ow-brand-rollout-plan .studio-details[open] > summary::after { content: "收起"; }
     #ow-brand-rollout-plan .section-head {
       align-items: baseline;
       border-bottom: 1px solid var(--border);
@@ -1138,6 +1619,7 @@ html>body{padding:0}
       overflow: hidden;
       position: relative;
     }
+    #ow-brand-rollout-plan .brand-mockup--x-header { aspect-ratio: 3 / 1; }
     #ow-brand-rollout-plan[data-preview-mode="dark"] .brand-mockup {
       --ow-card-bg: #080a0d;
       --ow-card-fg: #e2ebf2;
@@ -1543,22 +2025,127 @@ html>body{padding:0}
       fill: var(--ow-card-fg);
     }
     #ow-brand-rollout-plan .runtime-network--org .runtime-hub {
-      height: clamp(82px, 12vw, 124px);
+      height: clamp(94px, 13.5vw, 144px);
       left: 50%;
       top: 41%;
-      width: clamp(82px, 12vw, 124px);
+      width: clamp(94px, 13.5vw, 144px);
     }
+    #ow-brand-rollout-plan .runtime-network--org .runtime-hub img { height: 90%; width: 90%; }
     #ow-brand-rollout-plan .runtime-network--org .runtime-node {
-      height: clamp(20px, 2.8vw, 31px);
-      width: clamp(20px, 2.8vw, 31px);
+      height: clamp(15px, 2vw, 22px);
+      left: calc((50 + (var(--x) - 50) * 1.18) * 1%);
+      top: calc((41 + (var(--y) - 41) * 1.18) * 1%);
+      width: clamp(15px, 2vw, 22px);
     }
     #ow-brand-rollout-plan .runtime-network--org .provider-node {
-      height: clamp(17px, 2.35vw, 26px);
-      width: clamp(17px, 2.35vw, 26px);
+      height: clamp(12px, 1.6vw, 18px);
+      left: calc((50 + (var(--x) - 50) * 1.18) * 1%);
+      top: calc((41 + (var(--y) - 41) * 1.18) * 1%);
+      width: clamp(12px, 1.6vw, 18px);
     }
     #ow-brand-rollout-plan .runtime-network--org .channel-node {
-      height: clamp(17px, 2.35vw, 26px);
-      width: clamp(17px, 2.35vw, 26px);
+      height: clamp(11px, 1.4vw, 16px);
+      left: calc((50 + (var(--x) - 50) * 1.18) * 1%);
+      top: calc((41 + (var(--y) - 41) * 1.18) * 1%);
+      width: clamp(11px, 1.4vw, 16px);
+    }
+    #ow-brand-rollout-plan .runtime-network--org .runtime-network__lines {
+      transform: scale(1.18);
+      transform-box: view-box;
+      transform-origin: 50% 41%;
+    }
+    #ow-brand-rollout-plan .x-profile-header {
+      background:
+        radial-gradient(ellipse at 15% 94%, color-mix(in srgb, #67d7f3 18%, transparent), transparent 26%),
+        radial-gradient(ellipse at 72% 46%, color-mix(in srgb, #c59b5d 9%, transparent), transparent 22%),
+        var(--ow-card-bg);
+      inset: 0;
+      overflow: hidden;
+      position: absolute;
+    }
+    #ow-brand-rollout-plan .x-profile-header .star-field { opacity: .82; }
+    #ow-brand-rollout-plan .x-profile-header .gravity-grid { opacity: .36; }
+    #ow-brand-rollout-plan .runtime-network--x {
+      inset: 0;
+      position: absolute;
+      z-index: 2;
+    }
+    #ow-brand-rollout-plan .runtime-network--x .runtime-network__lines { z-index: 1; }
+    #ow-brand-rollout-plan .runtime-network--x .orbit-link {
+      opacity: .1;
+      stroke-width: .65;
+    }
+    #ow-brand-rollout-plan .runtime-network--x .runtime-node {
+      height: clamp(14px, 1.7vw, 22px);
+      width: clamp(14px, 1.7vw, 22px);
+    }
+    #ow-brand-rollout-plan .runtime-network--x .provider-node {
+      height: clamp(12px, 1.45vw, 19px);
+      width: clamp(12px, 1.45vw, 19px);
+    }
+    #ow-brand-rollout-plan .runtime-network--x .channel-node {
+      height: clamp(10px, 1.15vw, 16px);
+      width: clamp(10px, 1.15vw, 16px);
+    }
+    #ow-brand-rollout-plan .runtime-network--x .runtime-hub {
+      height: clamp(74px, 10vw, 118px);
+      left: 50%;
+      top: 53%;
+      width: clamp(74px, 10vw, 118px);
+    }
+    #ow-brand-rollout-plan .runtime-network--x .runtime-hub img { height: 90%; width: 90%; }
+    #ow-brand-rollout-plan .x-profile-header__avatar-preview {
+      align-items: center;
+      aspect-ratio: 1;
+      background: #f8fafc;
+      border: 4px solid var(--ow-card-bg);
+      border-radius: 50%;
+      bottom: -21.75%;
+      box-shadow: 0 14px 32px rgb(0 0 0 / 28%);
+      display: none;
+      justify-content: center;
+      left: 5.75%;
+      position: absolute;
+      width: 18.5%;
+      z-index: 6;
+    }
+    #ow-brand-rollout-plan .x-profile-header__avatar-preview img {
+      height: 72%;
+      object-fit: contain;
+      width: 72%;
+    }
+    html[data-brand-platform-preview="true"] #ow-brand-rollout-plan .x-profile-header__avatar-preview {
+      display: flex;
+    }
+    #ow-brand-rollout-plan .x-profile-header__copy {
+      left: 72%;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 5;
+    }
+    #ow-brand-rollout-plan .x-profile-header__copy strong {
+      display: block;
+      font-size: clamp(15px, 2.3vw, 28px);
+      font-weight: 600;
+      letter-spacing: -.03em;
+      line-height: 1.05;
+    }
+    #ow-brand-rollout-plan .x-profile-header__copy span {
+      color: var(--ow-card-muted);
+      display: block;
+      font-size: clamp(8px, .95vw, 13px);
+      margin-top: 7px;
+    }
+    #ow-brand-rollout-plan .x-profile-header__safe-zone {
+      border: 1px dashed color-mix(in srgb, var(--ow-card-muted) 40%, transparent);
+      border-radius: 50%;
+      bottom: -35%;
+      height: 64%;
+      left: -4%;
+      opacity: 0;
+      position: absolute;
+      width: 21%;
     }
     #ow-brand-rollout-plan .runtime-network .orbit-trail {
       fill: none;
@@ -1569,7 +2156,8 @@ html>body{padding:0}
       stroke-width: .9;
       vector-effect: non-scaling-stroke;
     }
-    #ow-brand-rollout-plan .runtime-network--org .orbit-trail {
+    #ow-brand-rollout-plan .runtime-network--org .orbit-trail,
+    #ow-brand-rollout-plan .runtime-network--x .orbit-trail {
       opacity: .88;
       stroke-dasharray: 9.6 12.8;
       stroke-width: 4;
@@ -1577,7 +2165,8 @@ html>body{padding:0}
     #ow-brand-rollout-plan .runtime-network .orbit-trail--soft {
       opacity: .62;
     }
-    #ow-brand-rollout-plan .runtime-network--org .orbit-trail.orbit-trail--soft {
+    #ow-brand-rollout-plan .runtime-network--org .orbit-trail.orbit-trail--soft,
+    #ow-brand-rollout-plan .runtime-network--x .orbit-trail.orbit-trail--soft {
       opacity: .82;
     }
     #ow-brand-rollout-plan .runtime-network .orbit-trail--cyan {
@@ -1600,25 +2189,29 @@ html>body{padding:0}
       stroke-width: .55;
       vector-effect: non-scaling-stroke;
     }
+    #ow-brand-rollout-plan .runtime-network--repo .orbit-link:not([data-generated="true"]) {
+      display: none;
+    }
     #ow-brand-rollout-plan .runtime-network--repo .runtime-node {
-      height: clamp(21px, 3vw, 30px);
-      width: clamp(21px, 3vw, 30px);
+      height: clamp(15px, 2vw, 20px);
+      width: clamp(15px, 2vw, 20px);
     }
     #ow-brand-rollout-plan .runtime-network--repo .provider-node {
-      height: clamp(17px, 2.4vw, 24px);
-      width: clamp(17px, 2.4vw, 24px);
+      height: clamp(12px, 1.65vw, 17px);
+      width: clamp(12px, 1.65vw, 17px);
     }
     #ow-brand-rollout-plan .runtime-network--repo .channel-node,
     #ow-brand-rollout-plan .home-orbit .channel-node {
-      height: clamp(15px, 2vw, 22px);
-      width: clamp(15px, 2vw, 22px);
+      height: clamp(10px, 1.35vw, 15px);
+      width: clamp(10px, 1.35vw, 15px);
     }
     #ow-brand-rollout-plan .runtime-network--repo .runtime-hub {
-      height: clamp(48px, 7vw, 66px);
+      height: clamp(84px, 11vw, 118px);
       left: 73%;
       top: 45%;
-      width: clamp(48px, 7vw, 66px);
+      width: clamp(84px, 11vw, 118px);
     }
+    #ow-brand-rollout-plan .runtime-network--repo .runtime-hub img { height: 92%; width: 92%; }
     #ow-brand-rollout-plan .runtime-network--repo .runtime-copy {
       left: 4.5%;
       max-width: 31%;
@@ -1645,6 +2238,9 @@ html>body{padding:0}
       height: 100%;
       inset: 0;
       position: absolute;
+      transform: scale(1.16);
+      transform-box: view-box;
+      transform-origin: 75% 39%;
       width: 100%;
     }
     #ow-brand-rollout-plan .home-orbit__rings path {
@@ -1656,29 +2252,29 @@ html>body{padding:0}
       vector-effect: non-scaling-stroke;
     }
     #ow-brand-rollout-plan .home-orbit .runtime-node {
-      height: clamp(18px, 2.8vw, 28px);
-      width: clamp(18px, 2.8vw, 28px);
+      height: clamp(13px, 1.9vw, 20px);
+      width: clamp(13px, 1.9vw, 20px);
     }
     #ow-brand-rollout-plan .home-orbit .provider-node {
-      height: clamp(15px, 2.2vw, 22px);
-      width: clamp(15px, 2.2vw, 22px);
+      height: clamp(11px, 1.5vw, 16px);
+      width: clamp(11px, 1.5vw, 16px);
     }
     #ow-brand-rollout-plan .home-orbit__hub {
       align-items: center;
       display: flex;
-      height: clamp(54px, 8vw, 82px);
+      height: clamp(88px, 12vw, 136px);
       justify-content: center;
       left: 75%;
       position: absolute;
       top: 39%;
       transform: translate(-50%, -50%);
-      width: clamp(54px, 8vw, 82px);
+      width: clamp(88px, 12vw, 136px);
       z-index: 3;
     }
     #ow-brand-rollout-plan .home-orbit__hub img {
-      height: 86%;
+      height: 92%;
       object-fit: contain;
-      width: 86%;
+      width: 92%;
     }
     #ow-brand-rollout-plan .marketplace--compact .extension-icon img {
       height: 68%;
@@ -1741,7 +2337,6 @@ html>body{padding:0}
       padding-top: 10px;
     }
     @media (max-width: 820px) {
-      #ow-brand-rollout-plan .plan-head,
       #ow-brand-rollout-plan .section-head {
         align-items: flex-start;
         flex-direction: column;
@@ -1773,6 +2368,19 @@ html>body{padding:0}
       #ow-brand-rollout-plan .surface-table td:nth-child(4)::before { content: "设计规则"; }
     }
     @media (max-width: 620px) {
+      html[data-studio-view] body {
+        height: auto;
+        overflow: auto;
+      }
+      #ow-brand-rollout-plan {
+        display: block;
+        height: auto;
+      }
+      #ow-brand-rollout-plan .distribution-view {
+        display: block;
+        overflow: visible;
+      }
+      #ow-brand-rollout-plan .distribution-scroll { overflow: visible; }
       #ow-brand-rollout-plan .resource-grid,
       #ow-brand-rollout-plan .mockup-grid { grid-template-columns: 1fr; }
       #ow-brand-rollout-plan .mockup-item--wide { grid-column: auto; }
@@ -1794,20 +2402,365 @@ html>body{padding:0}
       #ow-brand-rollout-plan .runtime-network--org .runtime-copy { max-width: 80%; top: 79%; }
       #ow-brand-rollout-plan .runtime-network--org .runtime-hub { left: 50%; }
       #ow-brand-rollout-plan .runtime-network--repo .runtime-hub { left: 85%; }
+      #ow-brand-rollout-plan .studio-console { grid-template-columns: 1fr; }
+      #ow-brand-rollout-plan .studio-console { height: auto; min-height: calc(100vh - 20px); }
+      #ow-brand-rollout-plan .studio-console__sidebar { border-bottom: 1px solid var(--border); border-right: 0; }
+      #ow-brand-rollout-plan .studio-console__preview { padding: 10px; }
+      #ow-brand-rollout-plan .studio-console__frame-wrap { min-height: min(60vh, 520px); }
+      #ow-brand-rollout-plan .studio-view-switch { justify-content: stretch; margin-bottom: 10px; }
+      #ow-brand-rollout-plan .studio-view-switch .btn { flex: 1; }
+      #ow-brand-rollout-plan .distribution-toolbar {
+        align-items: stretch;
+        grid-template-columns: 1fr;
+        padding: 14px;
+      }
+      #ow-brand-rollout-plan .distribution-toolbar__tools { justify-content: stretch; }
+      #ow-brand-rollout-plan .distribution-search { min-width: 0; width: 100%; }
+      #ow-brand-rollout-plan .distribution-filters { width: 100%; }
+      #ow-brand-rollout-plan .distribution-item__main {
+        align-items: start;
+        grid-template-columns: 74px minmax(0, 1fr) auto;
+        padding: 14px;
+      }
+      #ow-brand-rollout-plan .distribution-item__preview { grid-row: span 2; }
+      #ow-brand-rollout-plan .distribution-item__identity { align-self: center; }
+      #ow-brand-rollout-plan .distribution-item__artifacts,
+      #ow-brand-rollout-plan .distribution-item__actions {
+        grid-column: 1 / -1;
+      }
+      #ow-brand-rollout-plan .distribution-item__actions { justify-content: flex-start; }
+      #ow-brand-rollout-plan .distribution-item__toggle { grid-column: 1 / -1; width: 100%; }
+      #ow-brand-rollout-plan .distribution-item__details { grid-template-columns: 1fr; padding: 14px; }
+      #ow-brand-rollout-plan .distribution-item__details p { grid-column: auto; }
+    }
+    @media (max-width: 460px) {
+      #ow-brand-rollout-plan .studio-console__preview-head { align-items: flex-start; flex-direction: column; gap: 2px; }
     }
   </style>
 
-  <header class="plan-head">
-    <div>
-      <h2>One Works 图标替换方案 · 待确认</h2>
-      <p>以现有 Linear Möbius 为唯一品牌母版；亮色、暗色和背景形态由场景决定，不复制业务默认值。</p>
-    </div>
-    <div class="viz-controls preview-controls" aria-label="方案预览主题">
-      <button class="btn" type="button" data-mode="light" aria-pressed="false">亮色预览</button>
-      <button class="btn" type="button" data-mode="dark" aria-pressed="true">暗色预览</button>
-    </div>
-  </header>
+  <nav class="studio-view-switch" aria-label="Brand Studio 页面">
+    <a class="btn btn-ghost" href="?" data-studio-view-link="studio">
+      <svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg>
+      <span>图片工作台</span>
+    </a>
+    <a class="btn btn-ghost" href="?view=distribution" data-studio-view-link="distribution">
+      <svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="7" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="7" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="7" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+      <span>发布管理</span>
+    </a>
+  </nav>
 
+  <section class="studio-console" aria-label="品牌资产控制台">
+    <div class="studio-console__sidebar">
+      <div class="studio-console__field">
+        <span>场景</span>
+        <input id="brand-studio-scene" type="hidden" value="github-org-readme">
+        <div class="studio-scene-grid" aria-label="选择导出场景">
+          <button class="studio-scene-card" type="button" data-studio-select-scene="github-org-readme" aria-pressed="true">
+          <img class="mode-image" data-light-src="dist/github-org-readme-light.png" data-dark-src="dist/github-org-readme-dark.png" src="dist/github-org-readme-dark.png" alt="GitHub Org README 预览">
+          <span><strong>GitHub Org README</strong><small>1292 × 640</small></span>
+        </button>
+        <button class="studio-scene-card" type="button" data-studio-select-scene="github-social-preview" aria-pressed="false">
+          <img class="mode-image" data-light-src="dist/github-social-preview-light.png" data-dark-src="dist/github-social-preview-dark.png" src="dist/github-social-preview-dark.png" alt="GitHub Social Preview 预览">
+          <span><strong>GitHub Social Preview</strong><small>1280 × 640</small></span>
+        </button>
+        <button class="studio-scene-card" type="button" data-studio-select-scene="homepage-open-graph" aria-pressed="false">
+          <img class="mode-image" data-light-src="dist/homepage-open-graph-light.png" data-dark-src="dist/homepage-open-graph-dark.png" src="dist/homepage-open-graph-dark.png" alt="Homepage Open Graph 预览">
+          <span><strong>Homepage Open Graph</strong><small>1200 × 600</small></span>
+        </button>
+        <button class="studio-scene-card" type="button" data-studio-select-scene="vscode-marketplace" aria-pressed="false">
+          <img class="mode-image" data-light-src="dist/vscode-marketplace-light.png" data-dark-src="dist/vscode-marketplace-dark.png" src="dist/vscode-marketplace-dark.png" alt="VS Code Marketplace 预览">
+          <span><strong>VS Code Marketplace</strong><small>1280 × 640</small></span>
+        </button>
+        <button class="studio-scene-card" type="button" data-studio-select-scene="chrome-web-store" aria-pressed="false">
+          <img class="mode-image" data-light-src="dist/chrome-web-store-light.png" data-dark-src="dist/chrome-web-store-dark.png" src="dist/chrome-web-store-dark.png" alt="Chrome Web Store 预览">
+          <span><strong>Chrome Web Store</strong><small>1280 × 640</small></span>
+        </button>
+        <button class="studio-scene-card" type="button" data-studio-select-scene="npm-readme-header" aria-pressed="false">
+          <img class="mode-image" data-light-src="dist/npm-readme-header-light.png" data-dark-src="dist/npm-readme-header-dark.png" src="dist/npm-readme-header-dark.png" alt="npm README Header 预览">
+          <span><strong>npm README Header</strong><small>1280 × 640</small></span>
+        </button>
+        <button class="studio-scene-card" type="button" data-studio-select-scene="x-profile-header" aria-pressed="false">
+          <img class="mode-image" data-light-src="dist/x-profile-header-light.png" data-dark-src="dist/x-profile-header-dark.png" src="dist/x-profile-header-dark.png" alt="X / Twitter Profile Header 预览">
+          <span><strong>X / Twitter Profile Header</strong><small>1500 × 500</small></span>
+        </button>
+        </div>
+      </div>
+      <div class="studio-console__field">
+        <span>主题</span>
+        <div class="viz-controls preview-controls" aria-label="导出主题">
+          <button class="btn" type="button" data-mode="light" aria-pressed="false">亮色</button>
+          <button class="btn" type="button" data-mode="dark" aria-pressed="true">暗色</button>
+        </div>
+      </div>
+      <div class="studio-console__actions">
+        <a class="btn btn-primary" id="brand-studio-download" href="dist/github-org-readme-dark.png" download>
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"/></svg>
+          下载当前 PNG
+        </a>
+      </div>
+      <details class="studio-console__advanced">
+        <summary>高级信息</summary>
+        <div class="studio-console__advanced-body">
+          <div class="studio-console__asset">
+            <div class="studio-console__asset-head">
+              <div class="studio-console__filename" id="brand-studio-export-filename">github-org-readme-dark.png</div>
+              <span class="studio-console__status" id="brand-studio-export-status" data-ready="false" aria-live="polite">检查中</span>
+            </div>
+            <div class="studio-console__meta" id="brand-studio-export-meta">正在读取生成清单…</div>
+          </div>
+          <a class="btn" id="brand-studio-open-export" href="?scene=github-org-readme&amp;theme=dark&amp;export=1" target="_blank" rel="noreferrer">打开精确导出</a>
+        </div>
+      </details>
+    </div>
+    <div class="studio-console__preview">
+      <div class="studio-console__preview-head">
+        <strong id="brand-studio-preview-title">GitHub Org README</strong>
+        <span id="brand-studio-preview-ratio">1292 × 640 · 2.02:1</span>
+      </div>
+      <div class="studio-console__frame-wrap">
+        <iframe class="studio-console__frame" id="brand-studio-preview" title="当前品牌场景精确预览"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <section class="distribution-view" aria-labelledby="distribution-heading">
+    <header class="distribution-toolbar">
+      <div class="distribution-toolbar__intro">
+        <h1 id="distribution-heading">资源发布管理</h1>
+        <p>11 个投放位置 · 7 个场景 · 14 张精确 PNG</p>
+      </div>
+      <div class="distribution-toolbar__tools">
+        <label class="sr-only" for="distribution-search">搜索资源</label>
+        <div class="distribution-search-wrap">
+          <svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          <input class="form-control distribution-search" id="distribution-search" type="search" placeholder="搜索平台、入口或文件路径">
+        </div>
+        <div class="distribution-filters" aria-label="按平台筛选">
+          <button class="btn" type="button" data-distribution-filter="all" aria-pressed="true"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg><span>全部</span></button><button class="btn" type="button" data-distribution-filter="GitHub" aria-pressed="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4.5 1.4-4.5-2.3-6-2.8M15 22v-3.9c0-1.1.1-1.6-.5-2.2 3-.3 6.2-1.5 6.2-6.7A5.2 5.2 0 0 0 19.3 5 4.8 4.8 0 0 0 19.2 1S18.1.7 15 2.6a13.4 13.4 0 0 0-6 0C5.9.7 4.8 1 4.8 1a4.8 4.8 0 0 0-.1 4A5.2 5.2 0 0 0 3.3 9.2c0 5.2 3.2 6.4 6.2 6.7-.5.5-.7 1.1-.6 2.2V22"/></svg><span>GitHub</span></button><button class="btn" type="button" data-distribution-filter="Homepage" aria-pressed="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg><span>Homepage</span></button><button class="btn" type="button" data-distribution-filter="VS Code" aria-pressed="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m17 3-8 7-4-3-2 2 4 3-4 3 2 2 4-3 8 7 4-2V5Z"/><path d="M17 8v8l-5-4Z"/></svg><span>VS Code</span></button><button class="btn" type="button" data-distribution-filter="Chrome" aria-pressed="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M20.2 8H12M7.9 19.1 12 12M3.8 8l4.1 7.1"/></svg><span>Chrome</span></button><button class="btn" type="button" data-distribution-filter="npm" aria-pressed="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v10H11v-7H8v7H3Z"/></svg><span>npm</span></button><button class="btn" type="button" data-distribution-filter="X / Twitter" aria-pressed="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4 19 20M19 4 5 20"/></svg><span>X / Twitter</span></button><button class="btn" type="button" data-distribution-filter="Web / PWA" aria-pressed="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg><span>Web / PWA</span></button><button class="btn" type="button" data-distribution-filter="Desktop" aria-pressed="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>Desktop</span></button><button class="btn" type="button" data-distribution-filter="Android" aria-pressed="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M8 8 6.5 5.5M16 8l1.5-2.5M8 12h.01M16 12h.01M8 19v2M16 19v2"/></svg><span>Android</span></button>
+        </div>
+      </div>
+    </header>
+    <div class="distribution-scroll" id="distribution-scroll">
+      <div class="distribution-list" id="distribution-list">
+        <article class="distribution-item" data-distribution-id="github-org-avatar" data-distribution-platform="GitHub" data-distribution-search="github-org-avatar github organization 头像 apps/client/public/pwa-icon-512.png org 设置 源文件">
+        <div class="distribution-item__main">
+          <div class="distribution-item__preview"><img src="assets/distribution/github-org-avatar-default.png" alt="Organization 头像 当前资源预览"></div>
+          <div class="distribution-item__identity">
+            <span><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4.5 1.4-4.5-2.3-6-2.8M15 22v-3.9c0-1.1.1-1.6-.5-2.2 3-.3 6.2-1.5 6.2-6.7A5.2 5.2 0 0 0 19.3 5 4.8 4.8 0 0 0 19.2 1S18.1.7 15 2.6a13.4 13.4 0 0 0-6 0C5.9.7 4.8 1 4.8 1a4.8 4.8 0 0 0-.1 4A5.2 5.2 0 0 0 3.3 9.2c0 5.2 3.2 6.4 6.2 6.7-.5.5-.7 1.1-.6 2.2V22"/></svg>GitHub</span>
+            <h2>Organization 头像</h2>
+          </div>
+          <span class="distribution-status" data-status="manual">人工上传</span>
+          <div class="distribution-item__artifacts"><small>落地目标</small><code>apps/client/public/pwa-icon-512.png</code></div>
+          <div class="distribution-item__actions"><a class="btn btn-ghost" href="https://github.com/organizations/oneworks-ai/settings/profile" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>Org 设置</span></a><a class="btn btn-ghost" href="https://github.com/oneworks-ai/app/blob/main/apps/client/public/pwa-icon-512.png" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>源文件</span></a></div>
+          <button class="btn distribution-item__toggle" type="button" aria-expanded="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>维护说明</span></button>
+        </div>
+        <div class="distribution-item__details" hidden>
+          <section><h3>更新方式</h3><ol><li>在 app 仓库运行品牌资产同步与清单校验。</li><li>由 Organization owner 在 Org 设置中手动上传 512 × 512 PNG。</li></ol></section>
+          <section><h3>坑点</h3><ul><li>GitHub 不会从 README 或仓库文件自动同步 Organization 头像。</li><li>上传后 CDN 可能短时间保留旧头像；不要为此重复上传不同文件。</li></ul></section>
+          <p><strong>自动化边界</strong>生成与校验已自动化，平台上传仍是人工步骤。</p>
+        </div>
+      </article>
+      <article class="distribution-item" data-distribution-id="github-org-readme" data-distribution-platform="GitHub" data-distribution-search="github-org-readme github org profile readme header assets/github-profile/profile/brand-header-light.png assets/github-profile/profile/brand-header-dark.png 公开页面 维护仓库">
+        <div class="distribution-item__main">
+          <div class="distribution-item__preview"><img class="mode-image" data-light-src="dist/github-org-readme-light.png" data-dark-src="dist/github-org-readme-dark.png" src="dist/github-org-readme-dark.png" alt="Org Profile README Header 当前资源预览"></div>
+          <div class="distribution-item__identity">
+            <span><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4.5 1.4-4.5-2.3-6-2.8M15 22v-3.9c0-1.1.1-1.6-.5-2.2 3-.3 6.2-1.5 6.2-6.7A5.2 5.2 0 0 0 19.3 5 4.8 4.8 0 0 0 19.2 1S18.1.7 15 2.6a13.4 13.4 0 0 0-6 0C5.9.7 4.8 1 4.8 1a4.8 4.8 0 0 0-.1 4A5.2 5.2 0 0 0 3.3 9.2c0 5.2 3.2 6.4 6.2 6.7-.5.5-.7 1.1-.6 2.2V22"/></svg>GitHub</span>
+            <h2>Org Profile README Header</h2>
+            <span class="distribution-item__export"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg><span>最新导出 · 1292 × 640 · 亮 / 暗</span></span>
+          </div>
+          <span class="distribution-status" data-status="automated">自动同步</span>
+          <div class="distribution-item__artifacts"><small>落地目标</small><code>assets/github-profile/profile/brand-header-light.png</code><code>assets/github-profile/profile/brand-header-dark.png</code></div>
+          <div class="distribution-item__actions"><a class="btn" href="?scene=github-org-readme"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg><span>打开场景</span></a><a class="btn btn-ghost" href="https://github.com/oneworks-ai" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>公开页面</span></a><a class="btn btn-ghost" href="https://github.com/oneworks-ai/.github" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>维护仓库</span></a></div>
+          <button class="btn distribution-item__toggle" type="button" aria-expanded="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>维护说明</span></button>
+        </div>
+        <div class="distribution-item__details" hidden>
+          <section><h3>更新方式</h3><ol><li>Brand Studio 生成亮色与暗色两张精确 PNG。</li><li>同步到 .github/profile，并由 README 的 picture 元素按主题选择。</li></ol></section>
+          <section><h3>坑点</h3><ul><li>README Header 与 Repository Social Preview 是两个独立入口。</li><li>必须保留亮暗两张图及 picture 的 prefers-color-scheme 顺序。</li></ul></section>
+          <p data-distribution-manifest-scene="github-org-readme"><strong>当前导出</strong>正在读取生成清单…</p>
+          <p><strong>自动化边界</strong>场景导出、哈希校验和仓库文件同步可由流水线完成。</p>
+        </div>
+      </article>
+      <article class="distribution-item" data-distribution-id="github-repository-social-preview" data-distribution-platform="GitHub" data-distribution-search="github-repository-social-preview github repository social preview assets/brand/distribution/github-social-preview-light.png assets/brand/distribution/github-social-preview-dark.png 仓库设置 源文件">
+        <div class="distribution-item__main">
+          <div class="distribution-item__preview"><img class="mode-image" data-light-src="dist/github-social-preview-light.png" data-dark-src="dist/github-social-preview-dark.png" src="dist/github-social-preview-dark.png" alt="Repository Social Preview 当前资源预览"></div>
+          <div class="distribution-item__identity">
+            <span><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4.5 1.4-4.5-2.3-6-2.8M15 22v-3.9c0-1.1.1-1.6-.5-2.2 3-.3 6.2-1.5 6.2-6.7A5.2 5.2 0 0 0 19.3 5 4.8 4.8 0 0 0 19.2 1S18.1.7 15 2.6a13.4 13.4 0 0 0-6 0C5.9.7 4.8 1 4.8 1a4.8 4.8 0 0 0-.1 4A5.2 5.2 0 0 0 3.3 9.2c0 5.2 3.2 6.4 6.2 6.7-.5.5-.7 1.1-.6 2.2V22"/></svg>GitHub</span>
+            <h2>Repository Social Preview</h2>
+            <span class="distribution-item__export"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg><span>最新导出 · 1280 × 640 · 亮 / 暗</span></span>
+          </div>
+          <span class="distribution-status" data-status="manual">人工上传</span>
+          <div class="distribution-item__artifacts"><small>落地目标</small><code>assets/brand/distribution/github-social-preview-light.png</code><code>assets/brand/distribution/github-social-preview-dark.png</code></div>
+          <div class="distribution-item__actions"><a class="btn" href="?scene=github-social-preview"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg><span>打开场景</span></a><a class="btn btn-ghost" href="https://github.com/oneworks-ai/app/settings" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>仓库设置</span></a><a class="btn btn-ghost" href="https://github.com/oneworks-ai/app/tree/main/assets/brand/distribution" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>源文件</span></a></div>
+          <button class="btn distribution-item__toggle" type="button" aria-expanded="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>维护说明</span></button>
+        </div>
+        <div class="distribution-item__details" hidden>
+          <section><h3>更新方式</h3><ol><li>生成并校验 Social Preview 场景。</li><li>仓库管理员在 Settings → General → Social preview 手动上传选定主题的 PNG。</li></ol></section>
+          <section><h3>坑点</h3><ul><li>仓库内提交图片不会改变 GitHub 的 Social Preview。</li><li>平台只使用一张上传图，不会根据访客主题自动切换亮暗版本。</li></ul></section>
+          <p data-distribution-manifest-scene="github-social-preview"><strong>当前导出</strong>正在读取生成清单…</p>
+          <p><strong>自动化边界</strong>生成已自动化；GitHub 设置页上传仍是人工步骤。</p>
+        </div>
+      </article>
+      <article class="distribution-item" data-distribution-id="homepage-open-graph" data-distribution-platform="Homepage" data-distribution-search="homepage-open-graph homepage open graph assets/homepage/apps/homepage/src/assets/social/social-card.png 官网 维护仓库">
+        <div class="distribution-item__main">
+          <div class="distribution-item__preview"><img class="mode-image" data-light-src="dist/homepage-open-graph-light.png" data-dark-src="dist/homepage-open-graph-dark.png" src="dist/homepage-open-graph-dark.png" alt="Open Graph 当前资源预览"></div>
+          <div class="distribution-item__identity">
+            <span><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>Homepage</span>
+            <h2>Open Graph</h2>
+            <span class="distribution-item__export"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg><span>最新导出 · 1200 × 600 · 亮 / 暗</span></span>
+          </div>
+          <span class="distribution-status" data-status="automated">自动同步</span>
+          <div class="distribution-item__artifacts"><small>落地目标</small><code>assets/homepage/apps/homepage/src/assets/social/social-card.png</code></div>
+          <div class="distribution-item__actions"><a class="btn" href="?scene=homepage-open-graph"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg><span>打开场景</span></a><a class="btn btn-ghost" href="https://oneworks.cloud" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>官网</span></a><a class="btn btn-ghost" href="https://github.com/oneworks-ai/oneworks-ai.github.io" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>维护仓库</span></a></div>
+          <button class="btn distribution-item__toggle" type="button" aria-expanded="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>维护说明</span></button>
+        </div>
+        <div class="distribution-item__details" hidden>
+          <section><h3>更新方式</h3><ol><li>生成 Homepage Open Graph 场景并同步为官网 social-card.png。</li><li>合入 homepage 仓库后由 Pages 流水线发布。</li></ol></section>
+          <section><h3>坑点</h3><ul><li>社交平台会缓存 OG 图片，线上文件更新后仍可能暂时显示旧图。</li><li>生产页面必须引用绝对 URL，不能依赖本地预览路径。</li></ul></section>
+          <p data-distribution-manifest-scene="homepage-open-graph"><strong>当前导出</strong>正在读取生成清单…</p>
+          <p><strong>自动化边界</strong>资源同步与网站部署均可由流水线完成。</p>
+        </div>
+      </article>
+      <article class="distribution-item" data-distribution-id="vscode-marketplace" data-distribution-platform="VS Code" data-distribution-search="vscode-marketplace vs code marketplace header apps/vscode-extension/assets/vscode-marketplace-light.png apps/vscode-extension/assets/vscode-marketplace-dark.png marketplace 扩展源码">
+        <div class="distribution-item__main">
+          <div class="distribution-item__preview"><img class="mode-image" data-light-src="dist/vscode-marketplace-light.png" data-dark-src="dist/vscode-marketplace-dark.png" src="dist/vscode-marketplace-dark.png" alt="Marketplace Header 当前资源预览"></div>
+          <div class="distribution-item__identity">
+            <span><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m17 3-8 7-4-3-2 2 4 3-4 3 2 2 4-3 8 7 4-2V5Z"/><path d="M17 8v8l-5-4Z"/></svg>VS Code</span>
+            <h2>Marketplace Header</h2>
+            <span class="distribution-item__export"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg><span>最新导出 · 1280 × 640 · 亮 / 暗</span></span>
+          </div>
+          <span class="distribution-status" data-status="automated">自动同步</span>
+          <div class="distribution-item__artifacts"><small>落地目标</small><code>apps/vscode-extension/assets/vscode-marketplace-light.png</code><code>apps/vscode-extension/assets/vscode-marketplace-dark.png</code></div>
+          <div class="distribution-item__actions"><a class="btn" href="?scene=vscode-marketplace"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg><span>打开场景</span></a><a class="btn btn-ghost" href="https://marketplace.visualstudio.com/items?itemName=oneworks-ai.oneworks-vscode-extension" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>Marketplace</span></a><a class="btn btn-ghost" href="https://github.com/oneworks-ai/app/tree/main/apps/vscode-extension" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>扩展源码</span></a></div>
+          <button class="btn distribution-item__toggle" type="button" aria-expanded="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>维护说明</span></button>
+        </div>
+        <div class="distribution-item__details" hidden>
+          <section><h3>更新方式</h3><ol><li>生成 Marketplace 场景并同步到扩展 assets。</li><li>随 VSIX 的 README 与扩展发布流程一同更新。</li></ol></section>
+          <section><h3>坑点</h3><ul><li>Marketplace 展示来自已发布的 VSIX，不会读取 main 分支的未发布文件。</li><li>发布前需确认 README 在 Marketplace 的远程图片与相对路径解析正常。</li></ul></section>
+          <p data-distribution-manifest-scene="vscode-marketplace"><strong>当前导出</strong>正在读取生成清单…</p>
+          <p><strong>自动化边界</strong>文件同步与 VSIX 构建已自动化；正式发布受 release gate 控制。</p>
+        </div>
+      </article>
+      <article class="distribution-item" data-distribution-id="chrome-web-store" data-distribution-platform="Chrome" data-distribution-search="chrome-web-store chrome web store promotional image packages/plugins/external-browser-driver/assets/chrome-web-store-light.png packages/plugins/external-browser-driver/assets/chrome-web-store-dark.png 开发者后台 扩展源码">
+        <div class="distribution-item__main">
+          <div class="distribution-item__preview"><img class="mode-image" data-light-src="dist/chrome-web-store-light.png" data-dark-src="dist/chrome-web-store-dark.png" src="dist/chrome-web-store-dark.png" alt="Web Store Promotional Image 当前资源预览"></div>
+          <div class="distribution-item__identity">
+            <span><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M20.2 8H12M7.9 19.1 12 12M3.8 8l4.1 7.1"/></svg>Chrome</span>
+            <h2>Web Store Promotional Image</h2>
+            <span class="distribution-item__export"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg><span>最新导出 · 1280 × 640 · 亮 / 暗</span></span>
+          </div>
+          <span class="distribution-status" data-status="hybrid">部分自动</span>
+          <div class="distribution-item__artifacts"><small>落地目标</small><code>packages/plugins/external-browser-driver/assets/chrome-web-store-light.png</code><code>packages/plugins/external-browser-driver/assets/chrome-web-store-dark.png</code></div>
+          <div class="distribution-item__actions"><a class="btn" href="?scene=chrome-web-store"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg><span>打开场景</span></a><a class="btn btn-ghost" href="https://chrome.google.com/webstore/devconsole/" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>开发者后台</span></a><a class="btn btn-ghost" href="https://github.com/oneworks-ai/app/tree/main/packages/plugins/external-browser-driver" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>扩展源码</span></a></div>
+          <button class="btn distribution-item__toggle" type="button" aria-expanded="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>维护说明</span></button>
+        </div>
+        <div class="distribution-item__details" hidden>
+          <section><h3>更新方式</h3><ol><li>生成 Web Store 场景并同步到插件 assets。</li><li>扩展 release 流水线上传包；商店 listing 素材按后台要求确认或更新。</li></ol></section>
+          <section><h3>坑点</h3><ul><li>扩展 ZIP 发布与商店 listing 图片更新是不同操作。</li><li>Chrome Web Store 审核和缓存可能让新素材晚于代码版本生效。</li></ul></section>
+          <p data-distribution-manifest-scene="chrome-web-store"><strong>当前导出</strong>正在读取生成清单…</p>
+          <p><strong>自动化边界</strong>扩展打包与提审已自动化；listing 素材可能仍需后台确认。</p>
+        </div>
+      </article>
+      <article class="distribution-item" data-distribution-id="npm-readme-header" data-distribution-platform="npm" data-distribution-search="npm-readme-header npm package readme header apps/bootstrap/assets/npm-readme-header-light.png apps/bootstrap/assets/npm-readme-header-dark.png npm 组织 发布仓库">
+        <div class="distribution-item__main">
+          <div class="distribution-item__preview"><img class="mode-image" data-light-src="dist/npm-readme-header-light.png" data-dark-src="dist/npm-readme-header-dark.png" src="dist/npm-readme-header-dark.png" alt="Package README Header 当前资源预览"></div>
+          <div class="distribution-item__identity">
+            <span><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v10H11v-7H8v7H3Z"/></svg>npm</span>
+            <h2>Package README Header</h2>
+            <span class="distribution-item__export"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg><span>最新导出 · 1280 × 640 · 亮 / 暗</span></span>
+          </div>
+          <span class="distribution-status" data-status="automated">自动同步</span>
+          <div class="distribution-item__artifacts"><small>落地目标</small><code>apps/bootstrap/assets/npm-readme-header-light.png</code><code>apps/bootstrap/assets/npm-readme-header-dark.png</code></div>
+          <div class="distribution-item__actions"><a class="btn" href="?scene=npm-readme-header"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg><span>打开场景</span></a><a class="btn btn-ghost" href="https://www.npmjs.com/org/oneworks" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>npm 组织</span></a><a class="btn btn-ghost" href="https://github.com/oneworks-ai/app" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>发布仓库</span></a></div>
+          <button class="btn distribution-item__toggle" type="button" aria-expanded="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>维护说明</span></button>
+        </div>
+        <div class="distribution-item__details" hidden>
+          <section><h3>更新方式</h3><ol><li>生成 npm README Header 并同步到需要打包的 workspace。</li><li>随对应 npm package 的 README 和版本发布。</li></ol></section>
+          <section><h3>坑点</h3><ul><li>npm 页面展示的是已发布 tarball 内的 README，不会跟随仓库 main 实时更新。</li><li>README 图片必须使用 npm 页面可访问的 URL 或随包发布的可靠路径。</li></ul></section>
+          <p data-distribution-manifest-scene="npm-readme-header"><strong>当前导出</strong>正在读取生成清单…</p>
+          <p><strong>自动化边界</strong>生成与同步已自动化；只有 package release 后线上才更新。</p>
+        </div>
+      </article>
+      <article class="distribution-item" data-distribution-id="x-profile-header" data-distribution-platform="X / Twitter" data-distribution-search="x-profile-header x / twitter profile header assets/brand-studio/dist/x-profile-header-light.png assets/brand-studio/dist/x-profile-header-dark.png 公开主页 编辑资料">
+        <div class="distribution-item__main">
+          <div class="distribution-item__preview"><img class="mode-image" data-light-src="dist/x-profile-header-light.png" data-dark-src="dist/x-profile-header-dark.png" src="dist/x-profile-header-dark.png" alt="Profile Header 当前资源预览"></div>
+          <div class="distribution-item__identity">
+            <span><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4 19 20M19 4 5 20"/></svg>X / Twitter</span>
+            <h2>Profile Header</h2>
+            <span class="distribution-item__export"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg><span>最新导出 · 1500 × 500 · 亮 / 暗</span></span>
+          </div>
+          <span class="distribution-status" data-status="manual">人工上传</span>
+          <div class="distribution-item__artifacts"><small>落地目标</small><code>assets/brand-studio/dist/x-profile-header-light.png</code><code>assets/brand-studio/dist/x-profile-header-dark.png</code></div>
+          <div class="distribution-item__actions"><a class="btn" href="?scene=x-profile-header"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg><span>打开场景</span></a><a class="btn btn-ghost" href="https://x.com/OneWorksAI" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>公开主页</span></a><a class="btn btn-ghost" href="https://x.com/settings/profile" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>编辑资料</span></a></div>
+          <button class="btn distribution-item__toggle" type="button" aria-expanded="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>维护说明</span></button>
+        </div>
+        <div class="distribution-item__details" hidden>
+          <section><h3>更新方式</h3><ol><li>Brand Studio 以 1500 × 500 精确导出亮暗横幅。</li><li>账号管理员在 X 的 Edit profile 中上传选定主题的 PNG。</li></ol></section>
+          <section><h3>坑点</h3><ul><li>X 头像会遮挡横幅左下区域，主体和关键信息必须避开安全区。</li><li>不同屏幕会轻微裁切横幅边缘，不能把文字或标记贴近四周。</li></ul></section>
+          <p data-distribution-manifest-scene="x-profile-header"><strong>当前导出</strong>正在读取生成清单…</p>
+          <p><strong>自动化边界</strong>场景生成、哈希校验和下载已自动化；X 平台上传仍是人工步骤。</p>
+        </div>
+      </article>
+      <article class="distribution-item" data-distribution-id="pwa-web-icons" data-distribution-platform="Web / PWA" data-distribution-search="pwa-web-icons web / pwa favicon、pwa 与 apple touch apps/client/public/favicon-linear-light.svg apps/client/public/favicon-linear-dark.svg apps/client/public/pwa-icon-192.png apps/client/public/pwa-icon-512.png apps/client/public/apple-touch-icon.png pwa 部署仓库">
+        <div class="distribution-item__main">
+          <div class="distribution-item__preview"><img class="mode-image" data-light-src="assets/distribution/pwa-web-icons-light.svg" data-dark-src="assets/distribution/pwa-web-icons-dark.svg" src="assets/distribution/pwa-web-icons-dark.svg" alt="Favicon、PWA 与 Apple Touch 当前资源预览"></div>
+          <div class="distribution-item__identity">
+            <span><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>Web / PWA</span>
+            <h2>Favicon、PWA 与 Apple Touch</h2>
+          </div>
+          <span class="distribution-status" data-status="automated">自动同步</span>
+          <div class="distribution-item__artifacts"><small>落地目标</small><code>apps/client/public/favicon-linear-light.svg</code><code>apps/client/public/favicon-linear-dark.svg</code><code>apps/client/public/pwa-icon-192.png</code><code>apps/client/public/pwa-icon-512.png</code><code>apps/client/public/apple-touch-icon.png</code></div>
+          <div class="distribution-item__actions"><a class="btn btn-ghost" href="https://oneworks.cloud/pwa/" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>PWA</span></a><a class="btn btn-ghost" href="https://github.com/oneworks-ai/pwa" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>部署仓库</span></a></div>
+          <button class="btn distribution-item__toggle" type="button" aria-expanded="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>维护说明</span></button>
+        </div>
+        <div class="distribution-item__details" hidden>
+          <section><h3>更新方式</h3><ol><li>从 Linear brand profile 同步 SVG、PNG、PWA 尺寸与 Apple Touch 图标。</li><li>客户端与独立 PWA 构建均消费同一批已校验文件。</li></ol></section>
+          <section><h3>坑点</h3><ul><li>Safari、iOS 主屏和浏览器 favicon 都有独立缓存，不能只验证一个入口。</li><li>Apple Touch 与 PWA maskable 图标需要稳定底板，不能直接使用透明标记。</li></ul></section>
+          <p><strong>自动化边界</strong>生成、复制、清单校验和 PWA 部署均可自动化。</p>
+        </div>
+      </article>
+      <article class="distribution-item" data-distribution-id="desktop-icons" data-distribution-platform="Desktop" data-distribution-search="desktop-icons desktop macos、windows 与 linux app icon apps/desktop/build/icon.icns apps/desktop/build/icon.ico apps/desktop/build/icon.png apps/desktop/build/icon.icon releases desktop 源码">
+        <div class="distribution-item__main">
+          <div class="distribution-item__preview"><img src="assets/distribution/desktop-icons-default.png" alt="macOS、Windows 与 Linux App Icon 当前资源预览"></div>
+          <div class="distribution-item__identity">
+            <span><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span>
+            <h2>macOS、Windows 与 Linux App Icon</h2>
+          </div>
+          <span class="distribution-status" data-status="automated">自动同步</span>
+          <div class="distribution-item__artifacts"><small>落地目标</small><code>apps/desktop/build/icon.icns</code><code>apps/desktop/build/icon.ico</code><code>apps/desktop/build/icon.png</code><code>apps/desktop/build/icon.icon</code></div>
+          <div class="distribution-item__actions"><a class="btn btn-ghost" href="https://github.com/oneworks-ai/app/releases" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>Releases</span></a><a class="btn btn-ghost" href="https://github.com/oneworks-ai/app/tree/main/apps/desktop" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>Desktop 源码</span></a></div>
+          <button class="btn distribution-item__toggle" type="button" aria-expanded="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>维护说明</span></button>
+        </div>
+        <div class="distribution-item__details" hidden>
+          <section><h3>更新方式</h3><ol><li>由 Desktop icon sync 从 Linear profile 生成各平台容器与尺寸。</li><li>安装包工作流在打包前校验原生图标闭包。</li></ol></section>
+          <section><h3>坑点</h3><ul><li>macOS Icon Composer、ICNS、Windows ICO 和 Linux PNG 不是同一种容器。</li><li>只替换源 PNG 不代表安装包和 Dock / Start Menu 缓存已经更新。</li></ul></section>
+          <p><strong>自动化边界</strong>平台文件生成与安装包校验均已自动化。</p>
+        </div>
+      </article>
+      <article class="distribution-item" data-distribution-id="android-launcher" data-distribution-platform="Android" data-distribution-search="android-launcher android launcher adaptive icon apps/android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png apps/android/app/src/main/res/drawable-night-nodpi/ic_launcher_foreground.png android 源码 品牌清单">
+        <div class="distribution-item__main">
+          <div class="distribution-item__preview"><img class="mode-image" data-light-src="assets/distribution/android-launcher-light.png" data-dark-src="assets/distribution/android-launcher-dark.png" src="assets/distribution/android-launcher-dark.png" alt="Launcher Adaptive Icon 当前资源预览"></div>
+          <div class="distribution-item__identity">
+            <span><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M8 8 6.5 5.5M16 8l1.5-2.5M8 12h.01M16 12h.01M8 19v2M16 19v2"/></svg>Android</span>
+            <h2>Launcher Adaptive Icon</h2>
+          </div>
+          <span class="distribution-status" data-status="automated">自动同步</span>
+          <div class="distribution-item__artifacts"><small>落地目标</small><code>apps/android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png</code><code>apps/android/app/src/main/res/drawable-night-nodpi/ic_launcher_foreground.png</code></div>
+          <div class="distribution-item__actions"><a class="btn btn-ghost" href="https://github.com/oneworks-ai/app/tree/main/apps/android" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>Android 源码</span></a><a class="btn btn-ghost" href="https://github.com/oneworks-ai/app/blob/main/assets/brand/brand-assets.manifest.json" target="_blank" rel="noreferrer"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg><span>品牌清单</span></a></div>
+          <button class="btn distribution-item__toggle" type="button" aria-expanded="false"><svg class="studio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>维护说明</span></button>
+        </div>
+        <div class="distribution-item__details" hidden>
+          <section><h3>更新方式</h3><ol><li>品牌同步生成日间与夜间前景资源，Android 工程继续提供 adaptive icon 背景和 mask。</li><li>构建前通过品牌清单校验文件哈希。</li></ol></section>
+          <section><h3>坑点</h3><ul><li>Android Launcher 会按设备厂商 mask 裁切，内容必须留在 adaptive icon 安全区。</li><li>模拟器 Launcher 可能缓存旧图标；验证时需要重新安装而不是只热更新资源。</li></ul></section>
+          <p><strong>自动化边界</strong>资源生成和哈希校验已自动化；设备视觉验证仍需真实安装。</p>
+        </div>
+      </article>
+      </div>
+      <p class="distribution-empty" id="distribution-empty" hidden>没有匹配的投放位置。</p>
+    </div>
+  </section>
+
+  <details class="studio-details" id="brand-studio-details" hidden>
+    <summary><strong>设计归档</strong></summary>
   <section aria-labelledby="resource-heading">
     <div class="section-head">
       <h3 id="resource-heading">1. 准备使用的现有资源</h3>
@@ -2404,22 +3357,24 @@ html>body{padding:0}
             <svg class="runtime-network__lines" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true">
               <path class="orbit-link" d="M46.00 9.00 C54.36 17.16 67.08 20.42 73 22.5 M62.00 7.00 C65.10 15.51 69.80 18.90 73 22.5 M83.00 11.00 C76.95 15.03 75.20 19.32 73 22.5 M88.00 24.00 C81.29 21.42 76.82 22.46 73 22.5 M82.00 38.00 C79.82 29.74 75.70 26.16 73 22.5 M47.00 37.00 C58.45 34.69 67.94 26.22 73 22.5 M48.00 24.00 C59.29 26.48 66.83 23.57 73 22.5 M56.00 17.00 C63.12 21.67 68.56 21.58 73 22.5 M68.00 35.00 C71.87 29.88 72.09 25.79 73 22.5 M55.00 29.00 C64.09 28.28 68.64 24.64 73 22.5 M34.00 4.00 C42.52 11.98 67.04 20.54 73 22.5 M52.00 2.50 C57.60 12.75 67.95 18.77 73 22.5 M75.00 2.50 C71.56 11.44 72.95 17.40 73 22.5 M96.00 11.00 C84.60 13.07 78.25 19.08 73 22.5 M96.00 40.00 C89.30 30.43 78.43 25.65 73 22.5 M60.00 46.00 C68.34 37.91 70.64 28.31 73 22.5" />
             </svg>
-            <div class="runtime-node" style="--x:46;--y:18" title="Claude Code"><img src="#ow-img-8" alt="Claude Code"></div>
-            <div class="runtime-node" style="--x:62;--y:14" title="Codex"><img class="mode-image" data-light-src="#ow-img-9" data-dark-src="#ow-img-10" src="#ow-img-10" alt="Codex"></div>
-            <div class="runtime-node" style="--x:83;--y:22" title="Copilot"><img src="#ow-img-11" alt="Copilot"></div>
-            <div class="runtime-node" style="--x:88;--y:48" title="Gemini"><img src="#ow-img-12" alt="Gemini"></div>
-            <div class="runtime-node" style="--x:82;--y:76" title="Kimi"><img src="#ow-img-13" alt="Kimi"></div>
-            <div class="provider-node is-theme-adaptive" style="--x:47;--y:74" title="DeepSeek"><img src="#ow-img-15" alt="DeepSeek"></div>
-            <div class="provider-node is-theme-adaptive" style="--x:48;--y:48" title="OpenAI"><img src="#ow-img-14" alt="OpenAI"></div>
-            <div class="provider-node" style="--x:56;--y:34" title="Moonshot"><img src="#ow-img-16" alt="Moonshot"></div>
-            <div class="provider-node" style="--x:68;--y:70" title="MiniMax"><img src="#ow-img-17" alt="MiniMax"></div>
-            <div class="provider-node" style="--x:55;--y:58" title="千问"><img src="#ow-img-18" alt="千问"></div>
-            <div class="channel-node" style="--x:34;--y:8" title="Telegram"><img src="#ow-img-19" alt="Telegram"></div>
-            <div class="channel-node" style="--x:52;--y:5" title="Lark"><img src="#ow-img-20" alt="Lark"></div>
-            <div class="channel-node" style="--x:75;--y:5" title="WeChat"><img src="#ow-img-21" alt="WeChat"></div>
-            <div class="channel-node" style="--x:96;--y:22" title="WeCom"><img src="#ow-img-22" alt="WeCom"></div>
-            <div class="channel-node" style="--x:96;--y:80" title="QQ Channel"><img src="#ow-img-23" alt="QQ Channel"></div>
-            <div class="channel-node" style="--x:60;--y:92" title="iMessage"><img src="#ow-img-24" alt="iMessage"></div>
+            <svg class="runtime-network__lines catalog-links" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true"><path class="orbit-link" data-generated="true" d="M41.68 6.84 C50.18 16.46 63.37 19.83 73.00 22.50 M60.24 4.52 C67.10 8.85 70.43 16.75 73.00 22.50 M84.60 9.16 C78.79 12.07 75.50 18.12 73.00 22.50 M90.40 24.24 C84.24 26.08 77.77 23.96 73.00 22.50 M83.44 40.48 C82.41 32.91 76.93 26.95 73.00 22.50 M60.24 45.12 C61.41 35.64 68.16 28.12 73.00 22.50 M44.00 24.24 C54.10 27.71 64.98 24.61 73.00 22.50 M42.84 39.32 C50.76 29.41 63.62 25.53 73.00 22.50 M53.28 16.12 C59.09 21.05 67.12 21.82 73.00 22.50 M67.20 37.00 C67.14 31.26 70.56 26.24 73.00 22.50 M52.12 30.04 C60.27 30.40 67.58 25.78 73.00 22.50 M27.76 1.25 C45.18 4.13 61.15 14.81 73.00 22.50 M48.64 1.25 C53.95 11.89 64.99 17.91 73.00 22.50 M75.32 1.25 C77.51 8.80 74.84 16.68 73.00 22.50 M97.50 9.16 C87.30 10.27 79.11 17.39 73.00 22.50 M97.50 42.80 C86.33 39.33 78.72 29.56 73.00 22.50 M57.92 48.75 C66.72 41.94 70.25 30.69 73.00 22.50" /></svg>
+            <div class="runtime-node" data-catalog-id="claude-code" data-catalog-kind="adapter" style="--x:41.68;--y:13.68" title="Claude Code"><img src="assets/icons/adapters/claude-code.svg" alt="Claude Code"></div>
+            <div class="runtime-node" data-catalog-id="codex" data-catalog-kind="adapter" style="--x:60.24;--y:9.04" title="Codex"><img class="mode-image" data-light-src="assets/icons/adapters/codex.svg" data-dark-src="assets/icons/adapters/codex-dark.svg" src="assets/icons/adapters/codex-dark.svg" alt="Codex"></div>
+            <div class="runtime-node" data-catalog-id="copilot" data-catalog-kind="adapter" style="--x:84.60;--y:18.32" title="GitHub Copilot"><img src="assets/icons/adapters/copilot.svg" alt="GitHub Copilot"></div>
+            <div class="runtime-node" data-catalog-id="gemini" data-catalog-kind="adapter" style="--x:90.40;--y:48.48" title="Gemini CLI"><img src="assets/icons/adapters/gemini.svg" alt="Gemini CLI"></div>
+            <div class="runtime-node" data-catalog-id="kimi" data-catalog-kind="adapter" style="--x:83.44;--y:80.96" title="Kimi CLI"><img src="assets/icons/adapters/kimi.svg" alt="Kimi CLI"></div>
+            <div class="runtime-node" data-catalog-id="opencode" data-catalog-kind="adapter" style="--x:60.24;--y:90.24" title="OpenCode"><img src="assets/icons/adapters/opencode.svg" alt="OpenCode"></div>
+            <div class="provider-node is-theme-adaptive" data-catalog-id="openai" data-catalog-kind="model-service" style="--x:44.00;--y:48.48" title="OpenAI"><img src="assets/icons/model-services/openai.svg" alt="OpenAI"></div>
+            <div class="provider-node is-theme-adaptive" data-catalog-id="deepseek" data-catalog-kind="model-service" style="--x:42.84;--y:78.64" title="DeepSeek"><img src="assets/icons/model-services/deepseek.svg" alt="DeepSeek"></div>
+            <div class="provider-node" data-catalog-id="moonshot" data-catalog-kind="model-service" style="--x:53.28;--y:32.24" title="Moonshot"><img src="assets/icons/model-services/moonshot.ico" alt="Moonshot"></div>
+            <div class="provider-node" data-catalog-id="minimax" data-catalog-kind="model-service" style="--x:67.20;--y:74.00" title="MiniMax"><img src="assets/icons/model-services/minimax.png" alt="MiniMax"></div>
+            <div class="provider-node" data-catalog-id="qwen" data-catalog-kind="model-service" style="--x:52.12;--y:60.08" title="Qwen"><img src="assets/icons/model-services/qwen.svg" alt="Qwen"></div>
+            <div class="channel-node" data-catalog-id="telegram" data-catalog-kind="channel" style="--x:27.76;--y:2.50" title="Telegram"><img src="assets/icons/channels/telegram.svg" alt="Telegram"></div>
+            <div class="channel-node" data-catalog-id="lark" data-catalog-kind="channel" style="--x:48.64;--y:2.50" title="Lark / Feishu"><img src="assets/icons/channels/lark.png" alt="Lark / Feishu"></div>
+            <div class="channel-node" data-catalog-id="wechat" data-catalog-kind="channel" style="--x:75.32;--y:2.50" title="WeChat"><img src="assets/icons/channels/wechat.svg" alt="WeChat"></div>
+            <div class="channel-node" data-catalog-id="wecom" data-catalog-kind="channel" style="--x:97.50;--y:18.32" title="WeCom"><img src="assets/icons/channels/wecom.svg" alt="WeCom"></div>
+            <div class="channel-node" data-catalog-id="qq-channel" data-catalog-kind="channel" style="--x:97.50;--y:85.60" title="QQ Channel"><img src="assets/icons/channels/qq-channel.svg" alt="QQ Channel"></div>
+            <div class="channel-node" data-catalog-id="imessage" data-catalog-kind="channel" style="--x:57.92;--y:97.50" title="iMessage"><img src="assets/icons/channels/imessage.svg" alt="iMessage"></div>
             <div class="runtime-hub"><img class="mode-image" data-light-src="#ow-img-0" data-dark-src="#ow-img-1" src="#ow-img-1" alt="Linear 品牌标记"></div>
 
             <svg class="gravity-scene-copy " viewBox="0 0 100 50" preserveAspectRatio="none" role="img" aria-label="One Works Connect runtimes, model services, and channels in one workspace.">
@@ -2595,22 +3550,24 @@ html>body{padding:0}
               <path d="M75.00 5.00 C73.17 11.67 74.60 15.84 75 19.5 M94.00 14.00 C85.96 18.92 79.94 18.64 75 19.5 M86.00 28.00 C82.02 22.71 78.01 21.34 75 19.5 M64.00 30.00 C67.73 23.79 71.94 21.84 75 19.5 M88.00 35.00 C83.98 26.24 78.71 23.05 75 19.5 M60.00 14.00 C67.59 14.64 71.37 17.70 75 19.5" />
               <path d="M45.00 4.00 C53.25 12.27 69.11 17.34 75 19.5 M62.00 2.00 C70.18 8.41 72.21 14.73 75 19.5 M82.00 2.50 C76.64 9.43 76.29 15.02 75 19.5 M96.00 22.00 C86.03 23.50 80.22 20.71 75 19.5 M94.00 44.00 C90.00 33.03 79.44 23.94 75 19.5 M70.00 47.00 C68.52 35.43 73.12 25.49 75 19.5" />
             </svg>
-            <div class="runtime-node" style="--x:68;--y:20" title="Claude Code"><img src="#ow-img-8" alt="Claude Code"></div>
-            <div class="runtime-node" style="--x:87;--y:39" title="Codex"><img class="mode-image" data-light-src="#ow-img-9" data-dark-src="#ow-img-10" src="#ow-img-10" alt="Codex"></div>
-            <div class="runtime-node" style="--x:80;--y:66" title="Copilot"><img src="#ow-img-11" alt="Copilot"></div>
-            <div class="runtime-node" style="--x:63;--y:39" title="Gemini"><img src="#ow-img-12" alt="Gemini"></div>
-            <div class="runtime-node" style="--x:88;--y:70" title="Kimi"><img src="#ow-img-13" alt="Kimi"></div>
-            <div class="provider-node is-theme-adaptive" style="--x:75;--y:10" title="DeepSeek"><img src="#ow-img-15" alt="DeepSeek"></div>
-            <div class="provider-node is-theme-adaptive" style="--x:94;--y:28" title="OpenAI"><img src="#ow-img-14" alt="OpenAI"></div>
-            <div class="provider-node" style="--x:86;--y:56" title="Moonshot"><img src="#ow-img-16" alt="Moonshot"></div>
-            <div class="provider-node" style="--x:64;--y:60" title="MiniMax"><img src="#ow-img-17" alt="MiniMax"></div>
-            <div class="provider-node" style="--x:60;--y:28" title="千问"><img src="#ow-img-18" alt="千问"></div>
-            <div class="channel-node" style="--x:45;--y:8" title="Telegram"><img src="#ow-img-19" alt="Telegram"></div>
-            <div class="channel-node" style="--x:62;--y:4" title="Lark"><img src="#ow-img-20" alt="Lark"></div>
-            <div class="channel-node" style="--x:82;--y:5" title="WeChat"><img src="#ow-img-21" alt="WeChat"></div>
-            <div class="channel-node" style="--x:96;--y:44" title="WeCom"><img src="#ow-img-22" alt="WeCom"></div>
-            <div class="channel-node" style="--x:94;--y:88" title="QQ Channel"><img src="#ow-img-23" alt="QQ Channel"></div>
-            <div class="channel-node" style="--x:70;--y:94" title="iMessage"><img src="#ow-img-24" alt="iMessage"></div>
+            <svg class="runtime-network__lines catalog-links" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true"><path class="orbit-link" data-generated="true" d="M66.88 8.48 C68.10 13.36 72.11 16.87 75.00 19.50 M88.92 19.50 C84.19 21.45 78.90 20.28 75.00 19.50 M80.80 35.16 C81.02 29.02 77.50 23.56 75.00 19.50 M61.08 19.50 C65.81 17.55 71.10 18.72 75.00 19.50 M90.08 37.48 C87.47 29.26 80.23 23.69 75.00 19.50 M50.64 39.80 C56.08 29.49 67.04 23.82 75.00 19.50 M96.00 13.12 C87.97 12.35 80.52 16.54 75.00 19.50 M75.00 2.68 C77.35 8.40 75.94 14.79 75.00 19.50 M87.76 29.36 C84.80 24.22 79.12 21.55 75.00 19.50 M62.24 31.68 C64.87 25.75 70.75 22.20 75.00 19.50 M57.60 13.12 C62.62 17.73 69.77 18.69 75.00 19.50 M40.20 2.00 C54.19 3.66 66.12 12.88 75.00 19.50 M59.92 2.00 C62.60 10.06 69.80 15.44 75.00 19.50 M83.12 2.00 C82.81 9.09 78.25 15.05 75.00 19.50 M96.00 22.40 C89.27 18.47 81.04 19.14 75.00 19.50 M96.00 47.92 C85.00 41.11 79.34 28.60 75.00 19.50 M69.20 48.00 C75.16 39.12 74.97 27.80 75.00 19.50" /></svg>
+            <div class="runtime-node" data-catalog-id="claude-code" data-catalog-kind="adapter" style="--x:66.88;--y:16.96" title="Claude Code"><img src="assets/icons/adapters/claude-code.svg" alt="Claude Code"></div>
+            <div class="runtime-node" data-catalog-id="codex" data-catalog-kind="adapter" style="--x:88.92;--y:39.00" title="Codex"><img class="mode-image" data-light-src="assets/icons/adapters/codex.svg" data-dark-src="assets/icons/adapters/codex-dark.svg" src="assets/icons/adapters/codex-dark.svg" alt="Codex"></div>
+            <div class="runtime-node" data-catalog-id="copilot" data-catalog-kind="adapter" style="--x:80.80;--y:70.32" title="GitHub Copilot"><img src="assets/icons/adapters/copilot.svg" alt="GitHub Copilot"></div>
+            <div class="runtime-node" data-catalog-id="gemini" data-catalog-kind="adapter" style="--x:61.08;--y:39.00" title="Gemini CLI"><img src="assets/icons/adapters/gemini.svg" alt="Gemini CLI"></div>
+            <div class="runtime-node" data-catalog-id="kimi" data-catalog-kind="adapter" style="--x:90.08;--y:74.96" title="Kimi CLI"><img src="assets/icons/adapters/kimi.svg" alt="Kimi CLI"></div>
+            <div class="runtime-node" data-catalog-id="opencode" data-catalog-kind="adapter" style="--x:50.64;--y:79.60" title="OpenCode"><img src="assets/icons/adapters/opencode.svg" alt="OpenCode"></div>
+            <div class="provider-node is-theme-adaptive" data-catalog-id="openai" data-catalog-kind="model-service" style="--x:96.00;--y:26.24" title="OpenAI"><img src="assets/icons/model-services/openai.svg" alt="OpenAI"></div>
+            <div class="provider-node is-theme-adaptive" data-catalog-id="deepseek" data-catalog-kind="model-service" style="--x:75.00;--y:5.36" title="DeepSeek"><img src="assets/icons/model-services/deepseek.svg" alt="DeepSeek"></div>
+            <div class="provider-node" data-catalog-id="moonshot" data-catalog-kind="model-service" style="--x:87.76;--y:58.72" title="Moonshot"><img src="assets/icons/model-services/moonshot.ico" alt="Moonshot"></div>
+            <div class="provider-node" data-catalog-id="minimax" data-catalog-kind="model-service" style="--x:62.24;--y:63.36" title="MiniMax"><img src="assets/icons/model-services/minimax.png" alt="MiniMax"></div>
+            <div class="provider-node" data-catalog-id="qwen" data-catalog-kind="model-service" style="--x:57.60;--y:26.24" title="Qwen"><img src="assets/icons/model-services/qwen.svg" alt="Qwen"></div>
+            <div class="channel-node" data-catalog-id="telegram" data-catalog-kind="channel" style="--x:40.20;--y:4.00" title="Telegram"><img src="assets/icons/channels/telegram.svg" alt="Telegram"></div>
+            <div class="channel-node" data-catalog-id="lark" data-catalog-kind="channel" style="--x:59.92;--y:4.00" title="Lark / Feishu"><img src="assets/icons/channels/lark.png" alt="Lark / Feishu"></div>
+            <div class="channel-node" data-catalog-id="wechat" data-catalog-kind="channel" style="--x:83.12;--y:4.00" title="WeChat"><img src="assets/icons/channels/wechat.svg" alt="WeChat"></div>
+            <div class="channel-node" data-catalog-id="wecom" data-catalog-kind="channel" style="--x:96.00;--y:44.80" title="WeCom"><img src="assets/icons/channels/wecom.svg" alt="WeCom"></div>
+            <div class="channel-node" data-catalog-id="qq-channel" data-catalog-kind="channel" style="--x:96.00;--y:95.84" title="QQ Channel"><img src="assets/icons/channels/qq-channel.svg" alt="QQ Channel"></div>
+            <div class="channel-node" data-catalog-id="imessage" data-catalog-kind="channel" style="--x:69.20;--y:96.00" title="iMessage"><img src="assets/icons/channels/imessage.svg" alt="iMessage"></div>
             <div class="home-orbit__hub"><img class="mode-image" data-light-src="#ow-img-0" data-dark-src="#ow-img-1" src="#ow-img-1" alt="Linear 品牌标记"></div>
 
             <svg class="gravity-scene-copy gravity-scene-copy--home" viewBox="0 0 100 50" preserveAspectRatio="none" role="img" aria-label="ONEWORKS.AI Build with every AI in one workspace. Adapters · Model services · Channels">
@@ -3075,6 +4032,103 @@ html>body{padding:0}
           </div>
         </div>
       </article>
+
+      <article class="mockup-item mockup-item--wide">
+        <div class="mockup-label"><strong>X / Twitter Profile Header</strong><span>1500 × 500 · 头像安全区</span></div>
+        <div class="brand-mockup brand-mockup--x-header">
+          <div class="x-profile-header">
+            <svg class="star-field star-field--x" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="ow-comet-x-0" gradientUnits="userSpaceOnUse" x1="8" y1="10" x2="26" y2="17"><stop class="star-field__comet-stop star-field__comet-stop--tail" offset="0"/><stop class="star-field__comet-stop star-field__comet-stop--mid" offset=".58"/><stop class="star-field__comet-stop star-field__comet-stop--head" offset="1"/></linearGradient>
+                <linearGradient id="ow-comet-x-1" gradientUnits="userSpaceOnUse" x1="94" y1="38" x2="80" y2="31"><stop class="star-field__comet-stop star-field__comet-stop--tail" offset="0"/><stop class="star-field__comet-stop star-field__comet-stop--mid" offset=".58"/><stop class="star-field__comet-stop star-field__comet-stop--head" offset="1"/></linearGradient>
+                <linearGradient id="ow-comet-x-2" gradientUnits="userSpaceOnUse" x1="77" y1="3" x2="70" y2="12"><stop class="star-field__comet-stop star-field__comet-stop--tail" offset="0"/><stop class="star-field__comet-stop star-field__comet-stop--mid" offset=".58"/><stop class="star-field__comet-stop star-field__comet-stop--head" offset="1"/></linearGradient>
+              </defs>
+              <ellipse class="star-field__well" cx="49" cy="25" rx="17" ry="12"/>
+              <g class="star-field__comet">
+                <path class="star-field__comet-tail star-field__comet-tail--outer" fill="url(#ow-comet-x-0)" d="M7 8 C13 10 20 13 26 17 C20 14 13 12 7 12 Z"/>
+                <path class="star-field__comet-tail star-field__comet-tail--inner" fill="url(#ow-comet-x-0)" d="M8 9.6 C14 11 21 14 26 17 C20 14.6 14 12.4 8 10.5 Z"/>
+                <circle class="star-field__comet-particle" cx="10" cy="10.8" r=".05" opacity=".1"/><circle class="star-field__comet-particle" cx="14" cy="11.9" r=".04" opacity=".15"/><circle class="star-field__comet-particle" cx="18" cy="13.4" r=".06" opacity=".2"/>
+                <circle class="star-field__comet-halo" cx="26" cy="17" r=".19"/><circle class="star-field__comet-head" cx="26" cy="17" r=".09"/>
+              </g>
+              <g class="star-field__comet">
+                <path class="star-field__comet-tail star-field__comet-tail--outer" fill="url(#ow-comet-x-1)" d="M95 40 C90 37 85 34 80 31 C85 33 91 35 95 37 Z"/>
+                <path class="star-field__comet-tail star-field__comet-tail--inner" fill="url(#ow-comet-x-1)" d="M94 38.9 C89 36.6 84 33.5 80 31 C85 33.8 90 36.8 94 39.5 Z"/>
+                <circle class="star-field__comet-particle" cx="91" cy="37.4" r=".045" opacity=".12"/><circle class="star-field__comet-particle" cx="87" cy="35.2" r=".055" opacity=".18"/>
+                <circle class="star-field__comet-halo" cx="80" cy="31" r=".17"/><circle class="star-field__comet-head" cx="80" cy="31" r=".08"/>
+              </g>
+              <g class="star-field__comet">
+                <path class="star-field__comet-tail star-field__comet-tail--outer" fill="url(#ow-comet-x-2)" d="M79 2 C76 5 73 8 70 12 C72 7 75 3 77 1 Z"/>
+                <path class="star-field__comet-tail star-field__comet-tail--inner" fill="url(#ow-comet-x-2)" d="M77.7 2 C75 5.5 72.5 9 70 12 C72.8 8.7 75.8 4.7 78.2 2.4 Z"/>
+                <circle class="star-field__comet-halo" cx="70" cy="12" r=".16"/><circle class="star-field__comet-head" cx="70" cy="12" r=".075"/>
+              </g>
+              <g class="star-field__diffraction" transform="rotate(-5 14 32)"><circle class="star-field__diffraction-halo" cx="14" cy="32" r=".5"/><path class="star-field__diffraction-primary" d="M14 30.9 14.04 32 14 33.1 13.96 32Z"/><path class="star-field__diffraction-secondary" d="M13.55 32 14 32.04 14.45 32 14 31.96Z"/><circle class="star-field__diffraction-core" cx="14" cy="32" r=".1"/></g>
+              <g class="star-field__diffraction" transform="rotate(8 88 11)"><circle class="star-field__diffraction-halo" cx="88" cy="11" r=".48"/><path class="star-field__diffraction-primary" d="M88 9.95 88.04 11 88 12.05 87.96 11Z"/><path class="star-field__diffraction-secondary" d="M87.58 11 88 11.04 88.42 11 88 10.96Z"/><circle class="star-field__diffraction-core" cx="88" cy="11" r=".1"/></g>
+              <circle class="star-field__dot star-field__dot--faint" cx="5" cy="25" r=".075"/><circle class="star-field__dot star-field__dot--medium" cx="10" cy="6" r=".12"/><circle class="star-field__dot star-field__dot--faint" cx="18" cy="43" r=".075"/><circle class="star-field__dot star-field__dot--bright star-field__tone--cool" cx="24" cy="29" r=".16"/><circle class="star-field__dot star-field__dot--faint" cx="32" cy="5" r=".075"/><circle class="star-field__dot star-field__dot--medium" cx="36" cy="39" r=".12"/><circle class="star-field__dot star-field__dot--faint" cx="42" cy="15" r=".075"/><circle class="star-field__dot star-field__dot--bright star-field__tone--warm" cx="56" cy="7" r=".16"/><circle class="star-field__dot star-field__dot--faint" cx="61" cy="42" r=".075"/><circle class="star-field__dot star-field__dot--medium" cx="68" cy="26" r=".12"/><circle class="star-field__dot star-field__dot--faint" cx="75" cy="45" r=".075"/><circle class="star-field__dot star-field__dot--bright star-field__tone--cool" cx="84" cy="22" r=".16"/><circle class="star-field__dot star-field__dot--faint" cx="92" cy="29" r=".075"/><circle class="star-field__dot star-field__dot--medium" cx="97" cy="6" r=".12"/>
+            </svg>
+            <svg class="gravity-grid gravity-grid--x" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M-13.95 -9.92 L-13.93 -7.89 L-13.90 -5.85 L-13.87 -3.81 L-13.83 -1.75 L-13.78 0.32 L-13.71 2.40 L-13.63 4.50 L-13.52 6.62 L-13.39 8.75 L-13.24 10.89 L-13.06 13.05 L-12.86 15.22 L-12.62 17.39 L-12.34 19.56 L-12.04 21.73 L-11.71 23.87 L-11.36 25.99 L-10.99 28.08 L-10.61 30.13 L-10.22 32.12 L-9.84 34.06 L-9.48 35.94 L-9.14 37.76 L-8.85 39.53 L-8.60 41.24 L-8.40 42.91 L-8.27 44.55 L-8.21 46.16 L-8.22 47.77 L-8.30 49.39 L-8.45 51.03 L-8.66 52.70 L-8.93 54.42 L-9.24 56.19 L-9.58 58.02" />
+              <path d="M-5.90 -9.83 L-5.86 -7.78 L-5.82 -5.71 L-5.77 -3.62 L-5.70 -1.51 L-5.61 0.62 L-5.51 2.78 L-5.38 4.97 L-5.22 7.18 L-5.03 9.42 L-4.80 11.69 L-4.54 13.98 L-4.24 16.29 L-3.90 18.60 L-3.51 20.91 L-3.09 23.20 L-2.63 25.46 L-2.14 27.67 L-1.64 29.82 L-1.11 31.89 L-0.59 33.86 L-0.08 35.74 L0.40 37.51 L0.85 39.17 L1.24 40.72 L1.56 42.19 L1.81 43.57 L1.97 44.89 L2.03 46.18 L2.00 47.46 L1.87 48.76 L1.64 50.09 L1.34 51.50 L0.96 52.98 L0.51 54.57 L0.03 56.26" />
+              <path d="M2.21 -9.68 L2.27 -7.58 L2.34 -5.46 L2.43 -3.32 L2.53 -1.15 L2.66 1.06 L2.81 3.31 L2.99 5.59 L3.20 7.92 L3.44 10.28 L3.71 12.68 L4.02 15.10 L4.35 17.54 L4.72 19.99 L5.12 22.42 L5.55 24.83 L5.99 27.18 L6.45 29.47 L6.91 31.66 L7.38 33.74 L7.85 35.68 L8.30 37.48 L8.72 39.11 L9.11 40.59 L9.45 41.91 L9.74 43.09 L9.94 44.15 L10.07 45.12 L10.11 46.04 L10.05 46.95 L9.90 47.88 L9.66 48.88 L9.33 49.98 L8.92 51.22 L8.46 52.60 L7.95 54.16" />
+              <path d="M10.43 -9.40 L10.53 -7.25 L10.66 -5.07 L10.80 -2.87 L10.97 -0.62 L11.15 1.66 L11.37 3.98 L11.60 6.34 L11.85 8.74 L12.12 11.16 L12.39 13.62 L12.66 16.09 L12.93 18.56 L13.17 21.03 L13.40 23.49 L13.59 25.91 L13.76 28.28 L13.90 30.58 L14.03 32.78 L14.14 34.86 L14.25 36.78 L14.36 38.54 L14.46 40.10 L14.56 41.47 L14.66 42.64 L14.73 43.63 L14.79 44.47 L14.81 45.19 L14.80 45.84 L14.74 46.47 L14.63 47.14 L14.48 47.88 L14.27 48.76 L14.02 49.79 L13.73 51.03 L13.41 52.47" />
+              <path d="M18.78 -8.91 L18.95 -6.69 L19.16 -4.43 L19.39 -2.15 L19.65 0.16 L19.93 2.50 L20.22 4.85 L20.53 7.23 L20.84 9.60 L21.12 11.98 L21.37 14.34 L21.56 16.68 L21.67 19.01 L21.68 21.32 L21.60 23.61 L21.41 25.88 L21.13 28.13 L20.77 30.35 L20.37 32.50 L19.95 34.56 L19.53 36.49 L19.13 38.27 L18.76 39.86 L18.43 41.24 L18.15 42.43 L17.92 43.43 L17.74 44.26 L17.60 44.97 L17.50 45.60 L17.43 46.20 L17.39 46.83 L17.37 47.54 L17.37 48.37 L17.37 49.37 L17.37 50.57 L17.38 52.00" />
+              <path d="M27.13 -8.14 L27.39 -5.81 L27.67 -3.46 L28.00 -1.09 L28.35 1.30 L28.73 3.67 L29.12 6.03 L29.52 8.36 L29.89 10.64 L30.23 12.85 L30.49 14.98 L30.66 17.04 L30.69 19.04 L30.58 20.99 L30.30 22.91 L29.85 24.84 L29.25 26.78 L28.53 28.75 L27.72 30.72 L26.86 32.67 L25.99 34.56 L25.15 36.37 L24.36 38.04 L23.65 39.56 L23.02 40.92 L22.49 42.13 L22.07 43.19 L21.75 44.14 L21.53 45.01 L21.42 45.86 L21.39 46.72 L21.44 47.64 L21.55 48.67 L21.72 49.84 L21.93 51.18 L22.18 52.72" />
+              <path d="M35.23 -7.18 L35.50 -4.73 L35.81 -2.25 L36.15 0.23 L36.52 2.69 L36.93 5.12 L37.35 7.49 L37.77 9.76 L38.18 11.93 L38.56 13.96 L38.88 15.85 L39.11 17.59 L39.22 19.20 L39.19 20.71 L39.01 22.15 L38.65 23.57 L38.13 25.02 L37.46 26.52 L36.65 28.10 L35.76 29.75 L34.81 31.44 L33.84 33.16 L32.90 34.85 L32.02 36.50 L31.21 38.07 L30.51 39.56 L29.92 40.98 L29.44 42.32 L29.09 43.61 L28.85 44.88 L28.72 46.17 L28.69 47.50 L28.75 48.91 L28.88 50.43 L29.08 52.07 L29.33 53.86" />
+              <path d="M42.82 -6.35 L42.99 -3.78 L43.20 -1.20 L43.42 1.37 L43.67 3.91 L43.93 6.39 L44.21 8.77 L44.49 11.03 L44.77 13.14 L45.04 15.06 L45.28 16.79 L45.48 18.32 L45.63 19.66 L45.71 20.84 L45.71 21.89 L45.61 22.87 L45.40 23.82 L45.08 24.81 L44.66 25.88 L44.15 27.05 L43.56 28.34 L42.91 29.74 L42.24 31.25 L41.55 32.84 L40.89 34.48 L40.27 36.16 L39.70 37.86 L39.21 39.57 L38.80 41.30 L38.47 43.06 L38.23 44.85 L38.08 46.69 L38.01 48.59 L38.01 50.57 L38.09 52.63 L38.22 54.77" />
+              <path d="M49.98 -6.03 L49.97 -3.43 L49.96 -0.82 L49.95 1.78 L49.93 4.33 L49.91 6.82 L49.89 9.20 L49.86 11.44 L49.83 13.52 L49.81 15.41 L49.77 17.10 L49.74 18.57 L49.71 19.83 L49.67 20.90 L49.62 21.82 L49.57 22.61 L49.50 23.34 L49.42 24.05 L49.31 24.81 L49.18 25.64 L49.02 26.60 L48.83 27.70 L48.62 28.95 L48.39 30.37 L48.15 31.94 L47.92 33.65 L47.69 35.49 L47.49 37.43 L47.31 39.48 L47.18 41.61 L47.09 43.81 L47.05 46.07 L47.05 48.39 L47.11 50.76 L47.21 53.16 L47.34 55.58" />
+              <path d="M57.14 -6.43 L56.95 -3.90 L56.73 -1.36 L56.48 1.17 L56.20 3.66 L55.90 6.08 L55.58 8.40 L55.25 10.61 L54.90 12.67 L54.56 14.56 L54.23 16.27 L53.91 17.80 L53.62 19.14 L53.36 20.31 L53.15 21.33 L52.99 22.24 L52.88 23.07 L52.82 23.86 L52.82 24.67 L52.86 25.53 L52.95 26.49 L53.07 27.58 L53.23 28.81 L53.40 30.22 L53.59 31.79 L53.80 33.53 L54.01 35.43 L54.23 37.47 L54.45 39.64 L54.68 41.92 L54.91 44.27 L55.15 46.69 L55.38 49.15 L55.62 51.64 L55.85 54.12 L56.08 56.60" />
+              <path d="M64.74 -7.36 L64.45 -4.96 L64.13 -2.56 L63.77 -0.18 L63.37 2.18 L62.94 4.48 L62.48 6.72 L62.00 8.86 L61.51 10.90 L61.02 12.82 L60.54 14.60 L60.09 16.24 L59.68 17.75 L59.33 19.14 L59.03 20.42 L58.82 21.61 L58.68 22.74 L58.63 23.85 L58.66 24.96 L58.78 26.11 L58.97 27.33 L59.24 28.64 L59.56 30.06 L59.93 31.61 L60.34 33.30 L60.78 35.12 L61.22 37.06 L61.67 39.12 L62.12 41.29 L62.55 43.53 L62.96 45.84 L63.34 48.19 L63.69 50.57 L64.02 52.96 L64.31 55.35 L64.57 57.72" />
+              <path d="M72.85 -8.39 L72.59 -6.15 L72.30 -3.91 L71.97 -1.67 L71.61 0.54 L71.21 2.73 L70.80 4.87 L70.36 6.95 L69.92 8.97 L69.48 10.92 L69.05 12.78 L68.65 14.57 L68.29 16.27 L67.97 17.89 L67.72 19.45 L67.53 20.96 L67.42 22.43 L67.39 23.89 L67.43 25.35 L67.56 26.83 L67.75 28.36 L68.01 29.94 L68.33 31.60 L68.70 33.33 L69.10 35.14 L69.52 37.04 L69.95 39.01 L70.38 41.06 L70.80 43.17 L71.21 45.33 L71.59 47.52 L71.94 49.74 L72.26 51.98 L72.54 54.22 L72.79 56.46 L73.01 58.68" />
+              <path d="M81.23 -9.19 L81.06 -7.07 L80.86 -4.95 L80.65 -2.84 L80.40 -0.73 L80.14 1.36 L79.87 3.43 L79.58 5.48 L79.28 7.49 L78.99 9.46 L78.71 11.39 L78.44 13.28 L78.20 15.13 L78.00 16.94 L77.83 18.72 L77.71 20.47 L77.64 22.21 L77.63 23.94 L77.66 25.67 L77.75 27.41 L77.89 29.18 L78.07 30.97 L78.29 32.80 L78.54 34.67 L78.81 36.57 L79.09 38.52 L79.38 40.51 L79.67 42.54 L79.96 44.59 L80.22 46.67 L80.48 48.77 L80.71 50.89 L80.92 53.00 L81.10 55.13 L81.27 57.24 L81.41 59.36" />
+              <path d="M89.60 -9.67 L89.52 -7.62 L89.42 -5.57 L89.30 -3.52 L89.18 -1.48 L89.05 0.56 L88.90 2.59 L88.76 4.61 L88.61 6.61 L88.46 8.60 L88.31 10.57 L88.18 12.52 L88.05 14.46 L87.95 16.39 L87.86 18.29 L87.80 20.19 L87.77 22.08 L87.76 23.97 L87.78 25.86 L87.83 27.76 L87.90 29.66 L87.99 31.58 L88.11 33.51 L88.24 35.45 L88.37 37.41 L88.52 39.39 L88.67 41.39 L88.82 43.40 L88.97 45.42 L89.10 47.46 L89.23 49.50 L89.35 51.54 L89.46 53.59 L89.55 55.64 L89.64 57.69 L89.71 59.74" />
+              <path d="M97.84 -9.89 L97.80 -7.87 L97.76 -5.85 L97.72 -3.84 L97.67 -1.82 L97.61 0.19 L97.56 2.20 L97.50 4.20 L97.44 6.21 L97.38 8.20 L97.32 10.19 L97.26 12.18 L97.21 14.16 L97.17 16.13 L97.14 18.10 L97.11 20.06 L97.10 22.03 L97.09 23.99 L97.10 25.95 L97.12 27.92 L97.15 29.89 L97.19 31.86 L97.24 33.83 L97.29 35.81 L97.34 37.80 L97.40 39.80 L97.46 41.79 L97.53 43.80 L97.58 45.81 L97.64 47.82 L97.69 49.83 L97.74 51.85 L97.78 53.86 L97.82 55.88 L97.85 57.90 L97.88 59.91" />
+              <path d="M105.95 -9.97 L105.94 -7.96 L105.92 -5.96 L105.91 -3.96 L105.89 -1.95 L105.88 0.05 L105.86 2.06 L105.84 4.06 L105.82 6.06 L105.80 8.06 L105.78 10.05 L105.76 12.05 L105.75 14.04 L105.73 16.04 L105.72 18.03 L105.71 20.02 L105.71 22.01 L105.71 24.00 L105.71 25.99 L105.72 27.98 L105.73 29.97 L105.74 31.96 L105.75 33.95 L105.77 35.95 L105.79 37.95 L105.81 39.94 L105.83 41.94 L105.85 43.94 L105.87 45.95 L105.88 47.95 L105.90 49.95 L105.92 51.96 L105.93 53.96 L105.94 55.97 L105.95 57.97 L105.96 59.98" />
+              <path d="M113.99 -9.99 L113.98 -7.99 L113.98 -5.99 L113.98 -3.99 L113.97 -1.99 L113.97 0.01 L113.96 2.01 L113.96 4.01 L113.95 6.01 L113.95 8.01 L113.94 10.01 L113.94 12.01 L113.93 14.01 L113.93 16.01 L113.93 18.01 L113.93 20.00 L113.92 22.00 L113.92 24.00 L113.92 26.00 L113.93 27.99 L113.93 29.99 L113.93 31.99 L113.94 33.99 L113.94 35.99 L113.95 37.99 L113.95 39.99 L113.96 41.99 L113.96 43.99 L113.97 45.99 L113.97 47.99 L113.97 49.99 L113.98 51.99 L113.98 53.99 L113.99 55.99 L113.99 57.99 L113.99 59.99" />
+              <path d="M-14.95 -9.93 L-12.44 -9.91 L-9.93 -9.88 L-7.41 -9.85 L-4.89 -9.82 L-2.36 -9.77 L0.18 -9.72 L2.72 -9.66 L5.28 -9.59 L7.85 -9.50 L10.43 -9.40 L13.03 -9.27 L15.63 -9.12 L18.25 -8.95 L20.87 -8.75 L23.49 -8.51 L26.10 -8.25 L28.68 -7.97 L31.23 -7.67 L33.74 -7.37 L36.21 -7.06 L38.62 -6.78 L40.97 -6.52 L43.27 -6.31 L45.53 -6.15 L47.76 -6.06 L49.98 -6.03 L52.19 -6.08 L54.42 -6.21 L56.68 -6.39 L58.99 -6.63 L61.35 -6.91 L63.76 -7.23 L66.22 -7.56 L68.74 -7.89 L71.29 -8.21 L73.89 -8.51 L76.50 -8.78 L79.13 -9.02 L81.76 -9.23 L84.38 -9.41 L87.00 -9.55 L89.60 -9.67 L92.19 -9.76 L94.77 -9.83 L97.33 -9.88 L99.88 -9.92 L102.41 -9.94 L104.94 -9.96 L107.46 -9.98 L109.97 -9.98 L112.48 -9.99 L114.99 -9.99" />
+              <path d="M-14.90 -4.85 L-12.38 -4.81 L-9.85 -4.76 L-7.32 -4.70 L-4.78 -4.64 L-2.23 -4.56 L0.33 -4.47 L2.90 -4.37 L5.49 -4.26 L8.10 -4.13 L10.73 -3.97 L13.38 -3.80 L16.05 -3.59 L18.73 -3.35 L21.42 -3.07 L24.11 -2.76 L26.77 -2.42 L29.40 -2.05 L31.99 -1.65 L34.50 -1.25 L36.94 -0.85 L39.29 -0.48 L41.55 -0.14 L43.74 0.14 L45.85 0.34 L47.91 0.46 L49.95 0.48 L51.99 0.41 L54.06 0.23 L56.18 -0.03 L58.36 -0.36 L60.63 -0.76 L62.99 -1.19 L65.43 -1.64 L67.96 -2.10 L70.55 -2.54 L73.20 -2.95 L75.88 -3.33 L78.59 -3.66 L81.30 -3.95 L84.00 -4.19 L86.69 -4.39 L89.36 -4.55 L92.01 -4.67 L94.63 -4.76 L97.22 -4.83 L99.80 -4.89 L102.36 -4.92 L104.90 -4.95 L107.43 -4.97 L109.96 -4.98 L112.47 -4.99 L114.98 -4.99" />
+              <path d="M-14.79 0.29 L-12.25 0.37 L-9.70 0.45 L-7.15 0.56 L-4.59 0.67 L-2.01 0.80 L0.58 0.94 L3.18 1.10 L5.81 1.27 L8.47 1.45 L11.15 1.66 L13.87 1.89 L16.61 2.15 L19.37 2.44 L22.14 2.76 L24.91 3.11 L27.65 3.51 L30.33 3.93 L32.95 4.38 L35.47 4.84 L37.87 5.30 L40.15 5.74 L42.30 6.13 L44.32 6.45 L46.25 6.68 L48.10 6.80 L49.91 6.82 L51.72 6.71 L53.58 6.48 L55.51 6.15 L57.54 5.73 L59.70 5.24 L61.99 4.71 L64.41 4.15 L66.95 3.58 L69.59 3.04 L72.31 2.53 L75.09 2.06 L77.89 1.65 L80.71 1.30 L83.51 1.00 L86.29 0.76 L89.05 0.56 L91.76 0.41 L94.44 0.29 L97.09 0.20 L99.70 0.14 L102.29 0.09 L104.85 0.06 L107.40 0.04 L109.93 0.03 L112.46 0.02 L114.97 0.01" />
+              <path d="M-14.61 5.51 L-12.03 5.64 L-9.45 5.79 L-6.86 5.96 L-4.26 6.15 L-1.65 6.35 L0.98 6.57 L3.62 6.80 L6.29 7.04 L8.99 7.28 L11.72 7.54 L14.49 7.80 L17.29 8.07 L20.12 8.35 L22.96 8.66 L25.79 8.99 L28.60 9.35 L31.35 9.74 L34.00 10.16 L36.53 10.60 L38.91 11.04 L41.11 11.46 L43.13 11.84 L44.99 12.16 L46.70 12.39 L48.30 12.51 L49.85 12.50 L51.40 12.37 L53.01 12.12 L54.72 11.74 L56.58 11.28 L58.61 10.73 L60.82 10.14 L63.21 9.53 L65.77 8.91 L68.47 8.31 L71.28 7.75 L74.16 7.25 L77.08 6.80 L80.02 6.41 L82.94 6.09 L85.83 5.82 L88.68 5.61 L91.48 5.44 L94.23 5.32 L96.93 5.22 L99.59 5.15 L102.21 5.10 L104.80 5.07 L107.36 5.04 L109.91 5.03 L112.44 5.02 L114.96 5.01" />
+              <path d="M-14.29 10.81 L-11.67 11.02 L-9.03 11.26 L-6.39 11.52 L-3.74 11.81 L-1.09 12.11 L1.57 12.42 L4.25 12.74 L6.94 13.05 L9.65 13.34 L12.39 13.62 L15.16 13.87 L17.96 14.09 L20.80 14.30 L23.66 14.49 L26.52 14.69 L29.37 14.89 L32.16 15.12 L34.86 15.38 L37.42 15.67 L39.80 15.97 L41.97 16.29 L43.90 16.58 L45.61 16.84 L47.12 17.02 L48.48 17.12 L49.77 17.10 L51.06 16.96 L52.41 16.71 L53.91 16.36 L55.58 15.91 L57.49 15.39 L59.62 14.83 L61.99 14.25 L64.57 13.66 L67.33 13.10 L70.23 12.58 L73.22 12.10 L76.26 11.68 L79.32 11.32 L82.36 11.02 L85.36 10.77 L88.31 10.57 L91.20 10.41 L94.01 10.30 L96.77 10.21 L99.47 10.14 L102.13 10.10 L104.74 10.06 L107.33 10.04 L109.88 10.03 L112.42 10.02 L114.95 10.01" />
+              <path d="M-13.82 16.19 L-11.12 16.49 L-8.41 16.83 L-5.70 17.20 L-2.99 17.60 L-0.29 18.02 L2.39 18.44 L5.07 18.84 L7.73 19.21 L10.39 19.54 L13.05 19.80 L15.72 19.99 L18.41 20.11 L21.14 20.16 L23.90 20.16 L26.70 20.11 L29.53 20.04 L32.34 19.98 L35.09 19.94 L37.73 19.94 L40.18 19.99 L42.40 20.07 L44.34 20.18 L45.99 20.29 L47.40 20.38 L48.60 20.42 L49.69 20.39 L50.75 20.28 L51.90 20.08 L53.20 19.81 L54.72 19.46 L56.52 19.07 L58.59 18.64 L60.94 18.19 L63.54 17.75 L66.35 17.33 L69.33 16.93 L72.42 16.57 L75.56 16.26 L78.73 15.99 L81.87 15.76 L84.97 15.57 L88.00 15.43 L90.95 15.31 L93.83 15.22 L96.64 15.15 L99.38 15.11 L102.06 15.07 L104.70 15.05 L107.29 15.03 L109.86 15.02 L112.41 15.01 L114.94 15.01" />
+              <path d="M-13.16 21.58 L-10.36 21.97 L-7.55 22.41 L-4.76 22.89 L-1.98 23.41 L0.75 23.93 L3.44 24.44 L6.07 24.92 L8.63 25.34 L11.13 25.67 L13.59 25.91 L16.02 26.03 L18.45 26.03 L20.91 25.92 L23.44 25.70 L26.05 25.38 L28.75 25.00 L31.52 24.59 L34.32 24.17 L37.06 23.78 L39.68 23.44 L42.07 23.18 L44.17 22.98 L45.93 22.84 L47.38 22.75 L48.56 22.68 L49.57 22.61 L50.52 22.53 L51.54 22.41 L52.73 22.27 L54.15 22.10 L55.88 21.90 L57.91 21.69 L60.26 21.48 L62.88 21.27 L65.73 21.07 L68.76 20.89 L71.91 20.72 L75.13 20.57 L78.36 20.45 L81.57 20.35 L84.72 20.26 L87.80 20.19 L90.80 20.14 L93.72 20.10 L96.55 20.07 L99.32 20.05 L102.02 20.03 L104.67 20.02 L107.27 20.01 L109.85 20.01 L112.40 20.01 L114.94 20.00" />
+              <path d="M-12.35 26.87 L-9.42 27.33 L-6.50 27.84 L-3.60 28.40 L-0.76 28.99 L1.99 29.58 L4.65 30.15 L7.17 30.68 L9.56 31.12 L11.82 31.47 L13.97 31.69 L16.03 31.78 L18.08 31.71 L20.15 31.50 L22.32 31.13 L24.62 30.63 L27.10 30.01 L29.74 29.30 L32.52 28.54 L35.37 27.76 L38.18 27.01 L40.84 26.32 L43.23 25.73 L45.27 25.24 L46.93 24.87 L48.27 24.60 L49.37 24.42 L50.36 24.32 L51.38 24.27 L52.55 24.26 L53.97 24.28 L55.69 24.32 L57.73 24.38 L60.08 24.44 L62.72 24.51 L65.59 24.58 L68.64 24.64 L71.80 24.71 L75.04 24.76 L78.29 24.81 L81.51 24.85 L84.68 24.89 L87.77 24.92 L90.78 24.94 L93.70 24.96 L96.54 24.97 L99.31 24.98 L102.01 24.99 L104.66 24.99 L107.27 24.99 L109.85 25.00 L112.40 25.00 L114.94 25.00" />
+              <path d="M-11.45 31.94 L-8.38 32.41 L-5.34 32.94 L-2.35 33.51 L0.55 34.10 L3.32 34.69 L5.92 35.26 L8.31 35.78 L10.49 36.22 L12.46 36.56 L14.25 36.78 L15.92 36.87 L17.54 36.80 L19.19 36.56 L20.94 36.16 L22.88 35.60 L25.05 34.89 L27.49 34.04 L30.16 33.09 L33.03 32.07 L35.99 31.02 L38.90 29.99 L41.61 29.03 L44.01 28.18 L46.02 27.48 L47.67 26.95 L49.02 26.60 L50.21 26.41 L51.38 26.37 L52.67 26.46 L54.18 26.65 L55.96 26.90 L58.05 27.20 L60.44 27.52 L63.08 27.85 L65.95 28.18 L68.98 28.48 L72.12 28.76 L75.32 29.00 L78.53 29.22 L81.71 29.40 L84.84 29.54 L87.90 29.66 L90.88 29.75 L93.78 29.82 L96.60 29.88 L99.35 29.92 L102.04 29.94 L104.68 29.96 L107.28 29.98 L109.86 29.98 L112.41 29.99 L114.94 29.99" />
+              <path d="M-10.58 36.70 L-7.39 37.11 L-4.24 37.57 L-1.16 38.05 L1.79 38.55 L4.56 39.05 L7.09 39.52 L9.35 39.95 L11.33 40.32 L13.04 40.61 L14.51 40.81 L15.83 40.88 L17.07 40.83 L18.33 40.63 L19.71 40.28 L21.29 39.78 L23.16 39.12 L25.35 38.32 L27.86 37.39 L30.67 36.35 L33.67 35.22 L36.73 34.06 L39.69 32.90 L42.41 31.83 L44.79 30.90 L46.80 30.16 L48.51 29.64 L50.02 29.36 L51.46 29.31 L52.99 29.45 L54.68 29.74 L56.61 30.14 L58.79 30.62 L61.23 31.13 L63.89 31.65 L66.74 32.16 L69.72 32.64 L72.79 33.07 L75.91 33.46 L79.03 33.79 L82.13 34.07 L85.18 34.29 L88.17 34.48 L91.09 34.62 L93.93 34.73 L96.71 34.81 L99.43 34.87 L102.10 34.91 L104.72 34.94 L107.31 34.96 L109.88 34.98 L112.42 34.99 L114.95 34.99" />
+              <path d="M-9.91 41.14 L-6.63 41.40 L-3.39 41.70 L-0.25 42.00 L2.73 42.31 L5.49 42.61 L7.98 42.89 L10.14 43.14 L11.97 43.35 L13.49 43.52 L14.73 43.63 L15.79 43.66 L16.75 43.62 L17.72 43.47 L18.81 43.22 L20.13 42.85 L21.75 42.36 L23.72 41.74 L26.07 41.00 L28.76 40.14 L31.72 39.16 L34.81 38.11 L37.90 37.02 L40.84 35.95 L43.50 34.99 L45.85 34.21 L47.92 33.65 L49.79 33.35 L51.59 33.30 L53.42 33.47 L55.36 33.82 L57.48 34.31 L59.80 34.87 L62.30 35.48 L64.97 36.10 L67.78 36.70 L70.69 37.26 L73.67 37.76 L76.68 38.21 L79.69 38.60 L82.68 38.92 L85.63 39.18 L88.52 39.39 L91.36 39.56 L94.14 39.69 L96.87 39.78 L99.54 39.85 L102.18 39.90 L104.78 39.93 L107.35 39.96 L109.90 39.97 L112.43 39.98 L114.96 39.99" />
+              <path d="M-9.57 45.33 L-6.24 45.39 L-2.97 45.46 L0.19 45.51 L3.18 45.55 L5.93 45.58 L8.38 45.59 L10.50 45.58 L12.26 45.57 L13.68 45.55 L14.81 45.52 L15.73 45.48 L16.55 45.42 L17.37 45.32 L18.31 45.18 L19.47 44.98 L20.94 44.71 L22.78 44.36 L24.99 43.91 L27.56 43.35 L30.42 42.69 L33.47 41.93 L36.57 41.10 L39.59 40.27 L42.42 39.51 L45.02 38.88 L47.40 38.44 L49.62 38.24 L51.76 38.26 L53.90 38.48 L56.12 38.87 L58.44 39.37 L60.88 39.95 L63.45 40.56 L66.13 41.18 L68.90 41.77 L71.73 42.32 L74.61 42.82 L77.50 43.26 L80.39 43.63 L83.26 43.95 L86.10 44.21 L88.89 44.41 L91.65 44.57 L94.36 44.69 L97.03 44.79 L99.66 44.85 L102.26 44.90 L104.83 44.93 L107.39 44.96 L109.92 44.97 L112.45 44.98 L114.97 44.99" />
+              <path d="M-9.63 49.44 L-6.32 49.29 L-3.07 49.11 L0.06 48.90 L3.03 48.66 L5.75 48.39 L8.19 48.11 L10.29 47.82 L12.06 47.56 L13.49 47.33 L14.63 47.14 L15.57 47.00 L16.40 46.90 L17.22 46.84 L18.15 46.81 L19.29 46.78 L20.72 46.74 L22.49 46.67 L24.63 46.54 L27.10 46.34 L29.85 46.04 L32.80 45.66 L35.82 45.22 L38.83 44.76 L41.73 44.33 L44.48 44.00 L47.09 43.81 L49.58 43.78 L52.01 43.92 L54.43 44.20 L56.87 44.60 L59.36 45.09 L61.92 45.62 L64.53 46.17 L67.21 46.71 L69.93 47.23 L72.69 47.71 L75.47 48.14 L78.25 48.51 L81.03 48.83 L83.79 49.10 L86.53 49.32 L89.23 49.50 L91.91 49.64 L94.56 49.74 L97.17 49.82 L99.76 49.88 L102.33 49.92 L104.88 49.94 L107.42 49.96 L109.95 49.98 L112.47 49.99 L114.98 49.99" />
+              <path d="M-10.08 53.68 L-6.85 53.34 L-3.68 52.95 L-0.61 52.51 L2.29 52.03 L4.98 51.52 L7.41 51.00 L9.54 50.48 L11.36 50.00 L12.88 49.59 L14.15 49.25 L15.23 49.01 L16.20 48.88 L17.17 48.84 L18.22 48.89 L19.46 49.01 L20.95 49.16 L22.74 49.34 L24.85 49.49 L27.25 49.61 L29.89 49.67 L32.72 49.67 L35.64 49.63 L38.59 49.56 L41.49 49.50 L44.32 49.50 L47.07 49.57 L49.75 49.73 L52.38 49.99 L54.98 50.32 L57.58 50.71 L60.18 51.14 L62.81 51.59 L65.45 52.04 L68.11 52.47 L70.79 52.87 L73.48 53.24 L76.17 53.57 L78.87 53.86 L81.55 54.11 L84.22 54.32 L86.87 54.48 L89.51 54.62 L92.12 54.72 L94.72 54.80 L97.29 54.86 L99.85 54.91 L102.39 54.94 L104.93 54.96 L107.45 54.97 L109.97 54.98 L112.48 54.99 L114.99 54.99" />
+              <path d="M-10.83 58.19 L-7.72 57.73 L-4.65 57.21 L-1.69 56.63 L1.14 56.01 L3.78 55.35 L6.19 54.68 L8.37 54.03 L10.28 53.42 L11.95 52.89 L13.41 52.47 L14.71 52.17 L15.93 52.01 L17.13 51.99 L18.41 52.09 L19.83 52.29 L21.46 52.58 L23.33 52.93 L25.45 53.29 L27.81 53.66 L30.38 54.00 L33.10 54.30 L35.93 54.57 L38.80 54.82 L41.68 55.06 L44.53 55.31 L47.34 55.58 L50.11 55.87 L52.84 56.19 L55.54 56.53 L58.21 56.88 L60.87 57.23 L63.52 57.58 L66.16 57.92 L68.79 58.23 L71.43 58.52 L74.06 58.78 L76.69 59.01 L79.31 59.22 L81.93 59.39 L84.53 59.53 L87.13 59.65 L89.71 59.74 L92.27 59.81 L94.83 59.86 L97.38 59.90 L99.91 59.93 L102.44 59.96 L104.96 59.97 L107.47 59.98 L109.98 59.99 L112.49 59.99 L114.99 60.00" />
+            </svg>
+            <div class="runtime-network runtime-network--x">
+              <svg class="runtime-network__lines" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true">
+                <path class="orbit-trail orbit-trail--soft orbit-trail--cyan" data-orbit-tier="adapter" d="M65.13 39.28 L65.03 39.71 L64.90 40.11 L64.74 40.49 L64.55 40.84 L64.33 41.17 L64.08 41.47 L63.81 41.75 L63.51 41.99 L63.18 42.21 L62.83 42.39 L62.45 42.55 L62.05 42.67 L61.63 42.76 L61.18 42.82 L60.71 42.85 L60.22 42.85 L59.72 42.82 L59.19 42.75 L58.65 42.66 L58.09 42.53 L57.52 42.38 L56.94 42.20 L56.35 41.98 L55.75 41.75 L55.14 41.49 L54.53 41.21 L53.91 40.90 L53.29 40.58 L52.67 40.25 L52.06 39.90 L51.44 39.54 L50.83 39.18 L50.22 38.81 L49.62 38.45 L49.02 38.08 L48.44 37.72 L47.85 37.37 L47.28 37.02 L46.70 36.69 L46.14 36.37 L45.58 36.06 L45.02 35.76 L44.47 35.47 L43.93 35.20 L43.39 34.93 L42.85 34.67 L42.33 34.41 L41.81 34.15 L41.31 33.89 L40.82 33.63 L40.35 33.37 L39.89 33.09 L39.46 32.81 L39.05 32.51 L38.66 32.20 L38.30 31.87 L37.97 31.53 L37.66 31.17 L37.38 30.79 L37.12 30.40 L36.89 29.99 L36.69 29.56 L36.50 29.12 L36.34 28.66 L36.19 28.18 L36.06 27.69 L35.95 27.20 L35.84 26.69 L35.75 26.17 L35.66 25.64 L35.58 25.11 L35.50 24.57 L35.43 24.03 L35.37 23.48 L35.30 22.93 L35.24 22.37 L35.19 21.82 L35.14 21.27 L35.09 20.71 L35.06 20.17 L35.03 19.62 L35.01 19.08 L35.01 18.54 L35.02 18.02 L35.04 17.50 L35.08 17.00 L35.13 16.50 L35.21 16.03 L35.30 15.57 L35.41 15.12 L35.55 14.70 L35.70 14.30 L35.88 13.92 L36.08 13.56 L36.30 13.23 L36.55 12.92 L36.81 12.64 L37.10 12.39 L37.40 12.16 L37.73 11.96 L38.07 11.80 L38.44 11.66 L38.82 11.55 L39.22 11.47 L39.63 11.43 L40.06 11.41 L40.50 11.42 L40.95 11.46 L41.41 11.53 L41.88 11.63 L42.36 11.75 L42.84 11.90 L43.32 12.08 L43.81 12.28 L44.29 12.50 L44.78 12.74 L45.26 13.01 L45.74 13.29 L46.20 13.59 L46.67 13.90 L47.12 14.22 L47.56 14.56 L47.99 14.90 L48.40 15.25 L48.81 15.60 L49.20 15.95 L49.57 16.30 L49.93 16.65 L50.28 17.00 L50.62 17.34 L50.94 17.68 L51.26 18.01 L51.56 18.33 L51.86 18.64 L52.15 18.95 L52.44 19.25 L52.72 19.54 L53.01 19.83 L53.30 20.11 L53.59 20.40 L53.88 20.68 L54.19 20.96 L54.50 21.24 L54.83 21.54 L55.16 21.83 L55.51 22.14 L55.87 22.46 L56.24 22.79 L56.63 23.14 L57.02 23.51 L57.43 23.89 L57.84 24.29 L58.26 24.71 L58.69 25.14 L59.12 25.60 L59.55 26.08 L59.98 26.57 L60.41 27.09 L60.83 27.61 L61.25 28.16 L61.65 28.71 L62.04 29.28 L62.42 29.86 L62.78 30.45 L63.12 31.04 L63.44 31.63 L63.74 32.23 L64.01 32.83 L64.26 33.42 L64.48 34.01 L64.68 34.60 L64.85 35.17 L64.99 35.74 L65.10 36.29 L65.18 36.83 L65.23 37.36 L65.25 37.87 L65.24 38.36 L65.20 38.83 L65.13 39.28" />
+                <path class="orbit-trail orbit-trail--violet" data-orbit-tier="model-service" d="M74.51 26.00 L74.51 26.40 L74.46 26.79 L74.38 27.18 L74.25 27.56 L74.07 27.94 L73.86 28.32 L73.60 28.69 L73.30 29.05 L72.97 29.40 L72.59 29.74 L72.18 30.07 L71.72 30.38 L71.24 30.68 L70.71 30.97 L70.16 31.25 L69.57 31.50 L68.95 31.75 L68.31 31.97 L67.63 32.17 L66.94 32.36 L66.22 32.53 L65.48 32.68 L64.73 32.81 L63.96 32.92 L63.18 33.01 L62.39 33.08 L61.60 33.14 L60.80 33.18 L60.01 33.20 L59.21 33.21 L58.42 33.21 L57.64 33.20 L56.86 33.18 L56.09 33.16 L55.34 33.14 L54.59 33.12 L53.85 33.11 L53.13 33.11 L52.40 33.12 L51.68 33.15 L50.95 33.20 L50.22 33.28 L49.47 33.39 L48.71 33.52 L47.91 33.68 L47.09 33.87 L46.23 34.09 L45.33 34.34 L44.39 34.61 L43.41 34.89 L42.39 35.19 L41.33 35.50 L40.25 35.81 L39.14 36.12 L38.03 36.42 L36.91 36.71 L35.80 36.99 L34.71 37.25 L33.65 37.49 L32.62 37.71 L31.63 37.91 L30.69 38.08 L29.80 38.23 L28.97 38.35 L28.19 38.45 L27.47 38.52 L26.81 38.56 L26.20 38.58 L25.65 38.57 L25.14 38.53 L24.68 38.46 L24.27 38.37 L23.90 38.25 L23.57 38.11 L23.28 37.94 L23.02 37.74 L22.79 37.52 L22.59 37.27 L22.42 37.00 L22.28 36.70 L22.17 36.38 L22.08 36.04 L22.01 35.67 L21.97 35.29 L21.96 34.88 L21.97 34.46 L22.01 34.02 L22.08 33.57 L22.17 33.10 L22.29 32.62 L22.44 32.13 L22.63 31.62 L22.84 31.11 L23.09 30.59 L23.37 30.06 L23.68 29.53 L24.04 29.00 L24.42 28.46 L24.85 27.93 L25.31 27.40 L25.80 26.87 L26.34 26.35 L26.91 25.83 L27.52 25.32 L28.16 24.83 L28.84 24.34 L29.55 23.88 L30.29 23.42 L31.06 22.99 L31.86 22.58 L32.67 22.19 L33.51 21.82 L34.36 21.48 L35.23 21.16 L36.10 20.87 L36.97 20.61 L37.84 20.37 L38.70 20.17 L39.55 19.99 L40.39 19.83 L41.20 19.70 L41.99 19.59 L42.76 19.51 L43.49 19.44 L44.20 19.39 L44.87 19.35 L45.51 19.33 L46.12 19.31 L46.70 19.30 L47.25 19.29 L47.78 19.28 L48.28 19.27 L48.77 19.25 L49.25 19.23 L49.72 19.20 L50.19 19.17 L50.67 19.13 L51.14 19.08 L51.63 19.03 L52.14 18.98 L52.66 18.92 L53.21 18.85 L53.78 18.79 L54.37 18.73 L54.99 18.68 L55.63 18.63 L56.30 18.58 L56.99 18.55 L57.70 18.53 L58.43 18.53 L59.18 18.54 L59.94 18.56 L60.72 18.61 L61.50 18.67 L62.28 18.75 L63.06 18.85 L63.84 18.97 L64.61 19.11 L65.37 19.27 L66.12 19.45 L66.84 19.65 L67.55 19.87 L68.23 20.11 L68.89 20.37 L69.52 20.64 L70.12 20.92 L70.69 21.23 L71.22 21.54 L71.71 21.87 L72.17 22.21 L72.59 22.56 L72.97 22.92 L73.31 23.29 L73.61 23.66 L73.87 24.04 L74.08 24.43 L74.25 24.82 L74.38 25.21 L74.47 25.61 L74.51 26.00" />
+                <path class="orbit-trail orbit-trail--soft orbit-trail--amber" data-orbit-tier="channel" d="M71.23 7.67 L71.33 8.15 L71.38 8.67 L71.40 9.21 L71.38 9.77 L71.31 10.36 L71.21 10.97 L71.07 11.60 L70.89 12.24 L70.67 12.90 L70.41 13.58 L70.12 14.27 L69.79 14.96 L69.42 15.67 L69.02 16.37 L68.59 17.08 L68.13 17.79 L67.64 18.49 L67.13 19.19 L66.59 19.88 L66.03 20.55 L65.46 21.22 L64.87 21.87 L64.28 22.50 L63.67 23.11 L63.06 23.71 L62.46 24.29 L61.85 24.85 L61.25 25.39 L60.66 25.91 L60.08 26.41 L59.51 26.91 L58.95 27.39 L58.41 27.86 L57.88 28.33 L57.36 28.80 L56.84 29.28 L56.34 29.76 L55.84 30.25 L55.34 30.76 L54.83 31.29 L54.32 31.84 L53.79 32.41 L53.24 33.01 L52.67 33.64 L52.07 34.29 L51.43 34.97 L50.76 35.67 L50.04 36.40 L49.29 37.13 L48.49 37.88 L47.65 38.64 L46.76 39.39 L45.84 40.14 L44.88 40.87 L43.89 41.58 L42.88 42.27 L41.85 42.93 L40.80 43.56 L39.75 44.14 L38.69 44.69 L37.65 45.19 L36.61 45.65 L35.59 46.06 L34.59 46.43 L33.62 46.75 L32.67 47.03 L31.76 47.27 L30.88 47.46 L30.04 47.62 L29.24 47.75 L28.47 47.84 L27.75 47.90 L27.06 47.93 L26.41 47.94 L25.80 47.92 L25.23 47.88 L24.70 47.82 L24.20 47.74 L23.74 47.65 L23.32 47.54 L22.93 47.42 L22.57 47.29 L22.24 47.15 L21.94 47.00 L21.68 46.84 L21.44 46.68 L21.23 46.51 L21.05 46.33 L20.90 46.15 L20.78 45.96 L20.68 45.76 L20.61 45.56 L20.57 45.34 L20.56 45.12 L20.58 44.87 L20.62 44.62 L20.70 44.34 L20.81 44.04 L20.96 43.71 L21.14 43.36 L21.37 42.97 L21.64 42.54 L21.95 42.07 L22.31 41.55 L22.72 40.99 L23.19 40.37 L23.72 39.70 L24.31 38.97 L24.96 38.19 L25.67 37.35 L26.45 36.47 L27.29 35.53 L28.20 34.56 L29.16 33.56 L30.17 32.53 L31.23 31.49 L32.33 30.45 L33.45 29.42 L34.57 28.42 L35.70 27.46 L36.81 26.54 L37.88 25.67 L38.92 24.87 L39.90 24.13 L40.83 23.44 L41.68 22.82 L42.48 22.24 L43.20 21.71 L43.86 21.21 L44.47 20.74 L45.03 20.28 L45.54 19.83 L46.02 19.38 L46.48 18.92 L46.92 18.45 L47.35 17.96 L47.79 17.45 L48.23 16.92 L48.68 16.38 L49.16 15.81 L49.65 15.22 L50.16 14.62 L50.70 14.01 L51.26 13.39 L51.85 12.76 L52.46 12.13 L53.09 11.51 L53.75 10.89 L54.42 10.29 L55.12 9.70 L55.82 9.13 L56.54 8.58 L57.27 8.05 L58.00 7.56 L58.73 7.09 L59.46 6.66 L60.19 6.26 L60.92 5.89 L61.63 5.56 L62.33 5.28 L63.02 5.03 L63.70 4.82 L64.35 4.65 L64.98 4.52 L65.60 4.43 L66.19 4.38 L66.75 4.37 L67.29 4.40 L67.80 4.47 L68.28 4.58 L68.72 4.73 L69.14 4.92 L69.53 5.14 L69.88 5.40 L70.19 5.70 L70.47 6.02 L70.72 6.39 L70.93 6.78 L71.10 7.21 L71.23 7.67" />
+              </svg>
+              <div class="runtime-node" data-catalog-id="claude-code" data-catalog-kind="adapter" data-orbit-angle="13.55" data-orbit-tier="adapter" style="--x:63.87;--y:83.38" title="Claude Code"><img src="assets/icons/adapters/claude-code.svg" alt="Claude Code"></div>
+              <div class="runtime-node" data-catalog-id="codex" data-catalog-kind="adapter" data-orbit-angle="84.69" data-orbit-tier="adapter" style="--x:44.83;--y:71.32" title="Codex"><img class="mode-image" data-light-src="assets/icons/adapters/codex.svg" data-dark-src="assets/icons/adapters/codex-dark.svg" src="assets/icons/adapters/codex-dark.svg" alt="Codex"></div>
+              <div class="runtime-node" data-catalog-id="copilot" data-catalog-kind="adapter" data-orbit-angle="153.24" data-orbit-tier="adapter" style="--x:35.21;--y:44.06" title="GitHub Copilot"><img src="assets/icons/adapters/copilot.svg" alt="GitHub Copilot"></div>
+              <div class="runtime-node" data-catalog-id="gemini" data-catalog-kind="adapter" data-orbit-angle="-128.47" data-orbit-tier="adapter" style="--x:44.67;--y:25.37" title="Gemini CLI"><img src="assets/icons/adapters/gemini.svg" alt="Gemini CLI"></div>
+              <div class="runtime-node" data-catalog-id="kimi" data-catalog-kind="adapter" data-orbit-angle="-62.99" data-orbit-tier="adapter" style="--x:56.44;--y:45.93" title="Kimi CLI"><img src="assets/icons/adapters/kimi.svg" alt="Kimi CLI"></div>
+              <div class="runtime-node" data-catalog-id="opencode" data-catalog-kind="adapter" data-orbit-angle="-21.00" data-orbit-tier="adapter" style="--x:64.38;--y:67.44" title="OpenCode"><img src="assets/icons/adapters/opencode.svg" alt="OpenCode"></div>
+              <div class="provider-node is-theme-adaptive" data-catalog-id="openai" data-catalog-kind="model-service" data-orbit-angle="42.03" data-orbit-tier="model-service" style="--x:66.21;--y:65.06" title="OpenAI"><img src="assets/icons/model-services/openai.svg" alt="OpenAI"></div>
+              <div class="provider-node is-theme-adaptive" data-catalog-id="deepseek" data-catalog-kind="model-service" data-orbit-angle="104.66" data-orbit-tier="model-service" style="--x:40.98;--y:71.20" title="DeepSeek"><img src="assets/icons/model-services/deepseek.svg" alt="DeepSeek"></div>
+              <div class="provider-node" data-catalog-id="moonshot" data-catalog-kind="model-service" data-orbit-angle="-179.99" data-orbit-tier="model-service" style="--x:22.29;--y:65.23" title="Moonshot"><img src="assets/icons/model-services/moonshot.ico" alt="Moonshot"></div>
+              <div class="provider-node" data-catalog-id="minimax" data-catalog-kind="model-service" data-orbit-angle="-104.67" data-orbit-tier="model-service" style="--x:45.92;--y:38.63" title="MiniMax"><img src="assets/icons/model-services/minimax.png" alt="MiniMax"></div>
+              <div class="provider-node" data-catalog-id="qwen" data-catalog-kind="model-service" data-orbit-angle="-42.04" data-orbit-tier="model-service" style="--x:65.36;--y:38.54" title="Qwen"><img src="assets/icons/model-services/qwen.svg" alt="Qwen"></div>
+              <div class="channel-node" data-catalog-id="telegram" data-catalog-kind="channel" data-orbit-angle="13.20" data-orbit-tier="channel" style="--x:71.13;--y:22.68" title="Telegram"><img src="assets/icons/channels/telegram.svg" alt="Telegram"></div>
+              <div class="channel-node" data-catalog-id="lark" data-catalog-kind="channel" data-orbit-angle="74.72" data-orbit-tier="channel" style="--x:56.16;--y:59.87" title="Lark / Feishu"><img src="assets/icons/channels/lark.png" alt="Lark / Feishu"></div>
+              <div class="channel-node" data-catalog-id="wechat" data-catalog-kind="channel" data-orbit-angle="122.22" data-orbit-tier="channel" style="--x:37.53;--y:90.48" title="WeChat"><img src="assets/icons/channels/wechat.svg" alt="WeChat"></div>
+              <div class="channel-node" data-catalog-id="wecom" data-catalog-kind="channel" data-orbit-angle="-166.80" data-orbit-tier="channel" style="--x:20.67;--y:88.91" title="WeCom"><img src="assets/icons/channels/wecom.svg" alt="WeCom"></div>
+              <div class="channel-node" data-catalog-id="qq-channel" data-catalog-kind="channel" data-orbit-angle="-105.28" data-orbit-tier="channel" style="--x:42.74;--y:44.09" title="QQ Channel"><img src="assets/icons/channels/qq-channel.svg" alt="QQ Channel"></div>
+              <div class="channel-node" data-catalog-id="imessage" data-catalog-kind="channel" data-orbit-angle="-57.78" data-orbit-tier="channel" style="--x:55.90;--y:18.13" title="iMessage"><img src="assets/icons/channels/imessage.svg" alt="iMessage"></div>
+              <div class="runtime-hub"><img class="mode-image" data-light-src="#ow-img-0" data-dark-src="#ow-img-1" src="#ow-img-1" alt="One Works"></div>
+            </div>
+            <div class="x-profile-header__safe-zone" aria-hidden="true"></div>
+            <div class="x-profile-header__avatar-preview" aria-label="X 头像布局预演"><img src="#ow-img-0" alt="One Works 头像"></div>
+          </div>
+        </div>
+      </article>
     </div>
     <div class="surface-note-box"><strong>构图建议：</strong>One Works 位于中心；内轨只放 adapters，中轨只放模型服务商，外轨只放 channels。三类能力通过真实图标和独立轨道形成可扫描的层级，同时由弱引力连线回到同一个 workspace。</div>
   </section>
@@ -3109,7 +4163,8 @@ html>body{padding:0}
     })()
   </script>
 
-  <p class="plan-foot">确认顺序建议：先确认 Linear 亮/暗母版与四种卡片方向，再实现统一 brand profile 和生成清单，最后按审计表逐项替换。当前页面只展示设计与代码收敛方案，不会提前覆盖现有品牌资产。</p>
+  <p class="plan-foot">设计归档仅保留导出所需的原始场景 DOM，不作为发布管理界面。</p>
+  </details>
 
 
 
@@ -3155,9 +4210,113 @@ html>body{padding:0}
 
   <script>
     (() => {
+      if (new URLSearchParams(window.location.search).get('export') === '1') return
       const root = document.getElementById('ow-brand-rollout-plan')
+      const activeView = document.documentElement.dataset.studioView ?? 'studio'
+      root.querySelectorAll('[data-studio-view-link]').forEach(link => {
+        if (link.dataset.studioViewLink === activeView) link.setAttribute('aria-current', 'page')
+      })
+
+      const distributionSearch = document.getElementById('distribution-search')
+      const distributionFilters = [...root.querySelectorAll('[data-distribution-filter]')]
+      const distributionItems = [...root.querySelectorAll('.distribution-item')]
+      const distributionEmpty = document.getElementById('distribution-empty')
+      let distributionPlatform = 'all'
+
+      const renderDistribution = () => {
+        const query = distributionSearch.value.trim().toLocaleLowerCase()
+        let visibleCount = 0
+        distributionItems.forEach(item => {
+          const matchesPlatform = distributionPlatform === 'all' ||
+            item.dataset.distributionPlatform === distributionPlatform
+          const matchesQuery = query === '' || item.dataset.distributionSearch.includes(query)
+          item.hidden = !(matchesPlatform && matchesQuery)
+          if (!item.hidden) visibleCount += 1
+        })
+        distributionEmpty.hidden = visibleCount !== 0
+      }
+
+      distributionSearch.addEventListener('input', renderDistribution)
+      distributionFilters.forEach(button => {
+        button.addEventListener('click', () => {
+          distributionPlatform = button.dataset.distributionFilter
+          distributionFilters.forEach(candidate => {
+            candidate.setAttribute('aria-pressed', String(candidate === button))
+          })
+          renderDistribution()
+        })
+      })
+      root.querySelectorAll('.distribution-item__toggle').forEach(button => {
+        button.addEventListener('click', () => {
+          const details = button.closest('.distribution-item').querySelector('.distribution-item__details')
+          const expanded = button.getAttribute('aria-expanded') !== 'true'
+          button.setAttribute('aria-expanded', String(expanded))
+          details.hidden = !expanded
+        })
+      })
+
+      const applyManifestToDistribution = manifest => {
+        root.querySelectorAll('[data-distribution-manifest-scene]').forEach(element => {
+          const scene = element.dataset.distributionManifestScene
+          const artifacts = manifest?.artifacts?.filter(item => item.scene === scene) ?? []
+          if (artifacts.length === 0) {
+            element.innerHTML = '<strong>当前导出</strong>尚未生成'
+            return
+          }
+          const summary = artifacts
+            .map(artifact => `${artifact.theme === 'light' ? '亮' : '暗'} ${artifact.sha256.slice(0, 12)}…`)
+            .join(' · ')
+          element.innerHTML = `<strong>当前导出</strong>${summary}`
+        })
+      }
+
+      if (activeView === 'distribution') {
+        fetch('dist/manifest.json', { cache: 'no-store' })
+          .then(response => response.ok ? response.json() : undefined)
+          .then(applyManifestToDistribution)
+          .catch(() => applyManifestToDistribution(undefined))
+        return
+      }
+
       const buttons = [...root.querySelectorAll('[data-mode]')]
       const images = [...root.querySelectorAll('.mode-image')]
+      const sceneSelect = document.getElementById('brand-studio-scene')
+      const sceneButtons = [...root.querySelectorAll('[data-studio-select-scene]')]
+      const preview = document.getElementById('brand-studio-preview')
+      const download = document.getElementById('brand-studio-download')
+      const openExport = document.getElementById('brand-studio-open-export')
+      const exportMeta = document.getElementById('brand-studio-export-meta')
+      const exportStatus = document.getElementById('brand-studio-export-status')
+      const exportFilename = document.getElementById('brand-studio-export-filename')
+      const previewTitle = document.getElementById('brand-studio-preview-title')
+      const previewRatio = document.getElementById('brand-studio-preview-ratio')
+      const scenes = {"github-org-readme":{"article":1,"height":640,"label":"GitHub Org README","themes":["light","dark"],"width":1292},"github-social-preview":{"article":2,"height":640,"label":"GitHub Social Preview","themes":["light","dark"],"width":1280},"homepage-open-graph":{"article":3,"height":600,"label":"Homepage Open Graph","themes":["light","dark"],"width":1200},"vscode-marketplace":{"article":4,"height":640,"label":"VS Code Marketplace","themes":["light","dark"],"width":1280},"chrome-web-store":{"article":5,"height":640,"label":"Chrome Web Store","themes":["light","dark"],"width":1280},"npm-readme-header":{"article":6,"height":640,"label":"npm README Header","themes":["light","dark"],"width":1280},"x-profile-header":{"article":7,"height":500,"label":"X / Twitter Profile Header","themes":["light","dark"],"width":1500}}
+      const requestedScene = new URLSearchParams(window.location.search).get('scene')
+      if (scenes[requestedScene] != null) sceneSelect.value = requestedScene
+      let manifest
+
+      const renderConsole = () => {
+        const scene = sceneSelect.value
+        const theme = root.dataset.previewMode
+        const config = scenes[scene]
+        const exportUrl = `?scene=${encodeURIComponent(scene)}&theme=${theme}&export=1`
+        const previewUrl = scene === 'x-profile-header' ? `${exportUrl}&platform-preview=1` : exportUrl
+        const artifact = manifest?.artifacts?.find(item => item.scene === scene && item.theme === theme)
+        preview.src = previewUrl
+        sceneButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.studioSelectScene === scene)))
+        openExport.href = exportUrl
+        const filename = `${scene}-${theme}.png`
+        download.href = artifact?.file ?? `dist/${filename}`
+        download.download = filename
+        exportFilename.textContent = filename
+        exportStatus.dataset.ready = String(artifact != null)
+        exportStatus.textContent = artifact == null ? '待生成' : '已校验'
+        previewTitle.textContent = config.label
+        previewRatio.textContent = `${config.width} × ${config.height} · ${(config.width / config.height).toFixed(2)}:1`
+        exportMeta.textContent = artifact == null
+          ? `${config.width} × ${config.height} · 产物尚未生成`
+          : `${artifact.width} × ${artifact.height} · SHA-256 ${artifact.sha256.slice(0, 12)}…`
+      }
 
       const setMode = (mode) => {
         root.dataset.previewMode = mode
@@ -3165,9 +4324,24 @@ html>body{padding:0}
         images.forEach(image => {
           image.src = mode === 'light' ? image.dataset.lightSrc : image.dataset.darkSrc
         })
+        renderConsole()
       }
 
       buttons.forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)))
+      sceneButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          sceneSelect.value = button.dataset.studioSelectScene
+          renderConsole()
+        })
+      })
+      fetch('dist/manifest.json', { cache: 'no-store' })
+        .then(response => response.ok ? response.json() : undefined)
+        .then(value => {
+          manifest = value
+          renderConsole()
+        })
+        .catch(() => renderConsole())
+      renderConsole()
     })()
   </script>
 </div>
@@ -3176,21 +4350,20 @@ html>body{padding:0}
     (() => {
       const parameters = new URLSearchParams(window.location.search)
       if (parameters.get('export') !== '1') return
-
-      const scenes = {
-        'github-org-readme': 1,
-        'github-social-preview': 2,
-        'homepage-open-graph': 3,
-        'vscode-marketplace': 4,
-        'chrome-web-store': 5,
-        'npm-readme-header': 6
+      if (parameters.get('platform-preview') === '1') {
+        document.documentElement.dataset.brandPlatformPreview = 'true'
       }
+
+      const scenes = {"github-org-readme":{"article":1,"height":640,"label":"GitHub Org README","themes":["light","dark"],"width":1292},"github-social-preview":{"article":2,"height":640,"label":"GitHub Social Preview","themes":["light","dark"],"width":1280},"homepage-open-graph":{"article":3,"height":600,"label":"Homepage Open Graph","themes":["light","dark"],"width":1200},"vscode-marketplace":{"article":4,"height":640,"label":"VS Code Marketplace","themes":["light","dark"],"width":1280},"chrome-web-store":{"article":5,"height":640,"label":"Chrome Web Store","themes":["light","dark"],"width":1280},"npm-readme-header":{"article":6,"height":640,"label":"npm README Header","themes":["light","dark"],"width":1280},"x-profile-header":{"article":7,"height":500,"label":"X / Twitter Profile Header","themes":["light","dark"],"width":1500}}
       const scene = parameters.get('scene')
-      const articleIndex = scenes[scene]
+      const articleIndex = scenes[scene]?.article
       if (!articleIndex) throw new Error(`Unknown Brand Studio scene: ${scene}`)
 
       const theme = parameters.get('theme') === 'light' ? 'light' : 'dark'
       const root = document.getElementById('ow-brand-rollout-plan')
+      const designArchive = document.getElementById('brand-studio-details')
+      designArchive?.removeAttribute('hidden')
+      designArchive?.setAttribute('open', '')
       root.dataset.previewMode = theme
       root.querySelectorAll('.mode-image').forEach(image => {
         image.src = theme === 'light' ? image.dataset.lightSrc : image.dataset.darkSrc
@@ -3198,11 +4371,17 @@ html>body{padding:0}
 
       requestAnimationFrame(() => requestAnimationFrame(() => {
         const article = root.querySelector(`.mockup-grid > .mockup-item:nth-child(${articleIndex})`)
-        const mockup = article?.querySelector('.brand-mockup')
-        if (!mockup) throw new Error(`Brand Studio scene is missing: ${scene}`)
+      const mockup = article?.querySelector('.brand-mockup')
+      if (!mockup) throw new Error(`Brand Studio scene is missing: ${scene}`)
+
+        const sceneWidth = Number(parameters.get('width')) || scenes[scene].width
+        const sceneHeight = Number(parameters.get('height')) || scenes[scene].height
 
         root.dataset.brandExport = 'true'
         document.documentElement.dataset.brandExport = 'true'
+        document.documentElement.style.setProperty('--brand-scene-width', sceneWidth)
+        document.documentElement.style.setProperty('--brand-scene-height', sceneHeight)
+        document.documentElement.style.setProperty('--brand-scene-ratio', sceneWidth / sceneHeight)
         mockup.dataset.brandExportTarget = 'true'
         document.title = `${scene}-${theme}`
         document.documentElement.dataset.brandSceneReady = 'true'

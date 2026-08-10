@@ -1,0 +1,40 @@
+name: Check generated assets
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generated-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: brand-studio
+      - uses: actions/checkout@v4
+        with:
+          repository: oneworks-ai/app
+          path: app
+          submodules: recursive
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm compile
+        working-directory: brand-studio
+        env:
+          ONEWORKS_APP_ROOT: ${{ github.workspace }}/app
+          ONEWORKS_SKIP_PRODUCT_SYNC: 1
+      - run: pnpm check
+        working-directory: brand-studio
+        env:
+          ONEWORKS_APP_ROOT: ${{ github.workspace }}/app
+          ONEWORKS_SKIP_DISTRIBUTION_SYNC_CHECK: 1
+      - name: Require committed generated source
+        run: git diff --exit-code -- index.html
+        working-directory: brand-studio

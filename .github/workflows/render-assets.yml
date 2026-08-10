@@ -1,0 +1,68 @@
+name: Render brand assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - assets/icons/**
+      - catalog/**
+      - distribution/**
+      - scripts/**
+      - src/**
+      - studio.config.json
+  repository_dispatch:
+    types: [product-catalog-updated]
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  render:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: brand-studio
+      - uses: actions/checkout@v4
+        with:
+          repository: oneworks-ai/app
+          path: app
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Sync product catalog icons
+        run: pnpm sync:catalog
+        working-directory: brand-studio
+        env:
+          ONEWORKS_APP_ROOT: ${{ github.workspace }}/app
+      - run: pnpm render
+        working-directory: brand-studio
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          ONEWORKS_APP_ROOT: ${{ github.workspace }}/app
+      - run: pnpm check
+        working-directory: brand-studio
+        env:
+          ONEWORKS_APP_ROOT: ${{ github.workspace }}/app
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          path: brand-studio
+          branch: automation/render-brand-assets
+          delete-branch: true
+          commit-message: "chore: refresh generated brand assets"
+          title: "chore: refresh generated brand assets"
+          body: |
+            Regenerated from the canonical catalog, icon inputs, and Studio template.
+
+            - [x] Compiled the catalog-driven Studio
+            - [x] Rendered every configured scene and theme
+            - [x] Verified manifest hashes and dimensions
+          labels: automation,assets
