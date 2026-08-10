@@ -54,6 +54,7 @@ jobs:
         working-directory: brand-studio
         env:
           ONEWORKS_APP_ROOT: ${{ github.workspace }}/app
+          ONEWORKS_SKIP_DISTRIBUTION_SYNC_CHECK: 1
       - uses: peter-evans/create-pull-request@v7
         with:
           path: brand-studio
