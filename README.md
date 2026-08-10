@@ -30,15 +30,19 @@ pnpm check
   target mappings live beside each publishing surface in
   `distribution/distribution.json`; platform-only uploads remain explicit
   manual steps.
+- A coordinated rollout may set `ONEWORKS_DISTRIBUTION_EXCLUDE_PREFIXES` to a
+  comma-separated list of consumer prefixes that another task currently owns.
+  Excluded targets remain declared and are reported without being overwritten.
 - `pnpm check` validates the scene registry, generated files, dimensions, and
   manifest hashes, and fails if any declared repository destination is stale.
 
 The render workflow checks the latest `oneworks-ai/app` catalog every six
 hours, and also accepts the `product-catalog-updated` repository dispatch for
 immediate refreshes. Adapter, model-service, channel, icon, and distribution
-preview changes are synchronized before every render; changed exports are
-opened as an automation pull request instead of being pushed directly to
-`main`.
+preview changes are synchronized before every render. Changed exports are
+published to `automation/render-brand-assets`; repository policy requires a
+maintainer or Git operator to open the pull request, so Actions never tries to
+create or merge one.
 
 ## Source of truth
 
@@ -49,6 +53,11 @@ or distorted text layer.
 
 Scene names and target sizes are declared in `studio.config.json`. Generated
 files and their source hash are recorded in `dist/manifest.json`.
+
+The application-side `assets/brand/catalog.json` is the product fact source.
+`pnpm sync:catalog` discovers app-owned additions, updates, and removals from
+that catalog while preserving any non-app extensions, then snapshots the
+result in `catalog/catalog.json` for deterministic compilation.
 
 The current registry contains 7 scenes and 14 exact light/dark PNG exports.
 For scene-backed publishing rows, `dist/<scene>-<theme>.png` is the latest

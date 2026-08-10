@@ -11,7 +11,7 @@
       "priority": 10,
       "provenance": {
         "repository": "oneworks-ai/app",
-        "path": "assets/demo-video/assets/adapter-promo/sources/claude-code.svg"
+        "path": "assets/brand/adapters/claude-code.svg"
       }
     },
     {
@@ -25,12 +25,13 @@
       "priority": 20,
       "provenance": {
         "repository": "oneworks-ai/app",
-        "path": "assets/demo-video/assets/adapter-promo/sources/codex.svg"
+        "path": "assets/brand/adapters/codex.svg",
+        "darkPath": "assets/brand/adapters/codex-dark.svg"
       }
     },
     {
       "id": "copilot",
-      "label": "GitHub Copilot",
+      "label": "Copilot",
       "kind": "adapter",
       "icon": "assets/icons/adapters/copilot.svg",
       "enabled": true,
@@ -38,12 +39,12 @@
       "priority": 30,
       "provenance": {
         "repository": "oneworks-ai/app",
-        "path": "assets/demo-video/assets/adapter-promo/sources/copilot.svg"
+        "path": "assets/brand/adapters/copilot.svg"
       }
     },
     {
       "id": "gemini",
-      "label": "Gemini CLI",
+      "label": "Gemini",
       "kind": "adapter",
       "icon": "assets/icons/adapters/gemini.svg",
       "enabled": true,
@@ -51,12 +52,12 @@
       "priority": 40,
       "provenance": {
         "repository": "oneworks-ai/app",
-        "path": "assets/demo-video/assets/adapter-promo/sources/gemini.svg"
+        "path": "assets/brand/adapters/gemini.svg"
       }
     },
     {
       "id": "kimi",
-      "label": "Kimi CLI",
+      "label": "Kimi",
       "kind": "adapter",
       "icon": "assets/icons/adapters/kimi.svg",
       "enabled": true,
@@ -64,7 +65,7 @@
       "priority": 50,
       "provenance": {
         "repository": "oneworks-ai/app",
-        "path": "assets/demo-video/assets/adapter-promo/sources/kimi.svg"
+        "path": "assets/brand/adapters/kimi.svg"
       }
     },
     {
@@ -77,7 +78,22 @@
       "priority": 60,
       "provenance": {
         "repository": "oneworks-ai/app",
-        "path": "assets/demo-video/assets/adapter-promo/sources/opencode.svg"
+        "path": "assets/brand/adapters/opencode.svg"
+      }
+    },
+    {
+      "id": "pi",
+      "label": "Pi",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/pi.svg",
+      "darkIcon": "assets/icons/adapters/pi-dark.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 70,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/adapters/pi.svg",
+        "darkPath": "assets/brand/adapters/pi-dark.svg"
       }
     },
     {
@@ -223,7 +239,8 @@
       "priority": 110,
       "provenance": {
         "repository": "oneworks-ai/app",
-        "path": "apps/client/src/assets/model-providers/kimi.svg"
+        "path": "apps/client/src/assets/model-providers/kimi.svg",
+        "darkPath": "apps/client/src/assets/model-providers/kimi-dark.svg"
       }
     },
     {
@@ -406,7 +423,7 @@
       "priority": 999,
       "provenance": {
         "repository": "oneworks-ai/app",
-        "path": "assets/demo-video/assets/adapter-promo/sources/oneworks.svg"
+        "path": "assets/brand/channels/oneworks.svg"
       }
     }
   ]

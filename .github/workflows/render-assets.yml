@@ -18,7 +18,10 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
+
+concurrency:
+  group: render-brand-assets
+  cancel-in-progress: false
 
 jobs:
   render:
@@ -28,12 +31,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: brand-studio
+          fetch-depth: 0
       - uses: actions/checkout@v4
         with:
           repository: oneworks-ai/app
           path: app
-      - name: Checkout product catalog asset sources
-        run: git -C app submodule update --init --depth 1 assets/demo-video
+          ref: ${{ github.event.client_payload.source_sha || 'main' }}
       - uses: pnpm/action-setup@v4
         with:
           version: 10.13.1
@@ -55,17 +58,26 @@ jobs:
         env:
           ONEWORKS_APP_ROOT: ${{ github.workspace }}/app
           ONEWORKS_SKIP_DISTRIBUTION_SYNC_CHECK: 1
-      - uses: peter-evans/create-pull-request@v7
-        with:
-          path: brand-studio
-          branch: automation/render-brand-assets
-          delete-branch: true
-          commit-message: "chore: refresh generated brand assets"
-          title: "chore: refresh generated brand assets"
-          body: |
-            Regenerated from the canonical catalog, icon inputs, and Studio template.
+      - name: Publish generated assets to the automation branch
+        working-directory: brand-studio
+        env:
+          SOURCE_SHA: ${{ github.event.client_payload.source_sha || 'main' }}
+        run: |
+          set -euo pipefail
 
-            - [x] Compiled the catalog-driven Studio
-            - [x] Rendered every configured scene and theme
-            - [x] Verified manifest hashes and dimensions
-          labels: automation,assets
+          if git diff --quiet; then
+            echo "The generated catalog and assets are already current."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin automation/render-brand-assets:refs/remotes/origin/automation/render-brand-assets || true
+          git switch --force-create automation/render-brand-assets
+          git add assets catalog dist index.html
+          git commit \
+            -m "chore: refresh generated brand assets" \
+            -m "One Works app source: ${SOURCE_SHA}"
+          git push --force-with-lease origin HEAD:automation/render-brand-assets
+
+          echo "::notice title=Brand Studio assets ready::Generated assets were published to automation/render-brand-assets. Repository policy requires a maintainer or Git operator to open the pull request."
