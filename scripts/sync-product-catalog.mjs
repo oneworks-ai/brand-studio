@@ -12,11 +12,10 @@ import {
 
 const expectedProductMarker = resolve(productRoot, 'packages/adapters')
 
-if (!existsSync(expectedProductMarker)) {
-  throw new Error(`One Works app checkout not found at ${productRoot}`)
-}
-
 export const syncProductAssets = () => {
+  if (!existsSync(expectedProductMarker)) {
+    throw new Error(`One Works app checkout not found at ${productRoot}`)
+  }
   const catalog = readCatalog()
   let changed = 0
 
