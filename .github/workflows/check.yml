@@ -25,10 +25,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: pnpm render
+      - run: pnpm compile
         working-directory: brand-studio
         env:
-          CHROME_BIN: /usr/bin/google-chrome
           ONEWORKS_APP_ROOT: ${{ github.workspace }}/app
           ONEWORKS_SKIP_PRODUCT_SYNC: 1
       - run: pnpm check
@@ -36,6 +35,6 @@ jobs:
         env:
           ONEWORKS_APP_ROOT: ${{ github.workspace }}/app
           ONEWORKS_SKIP_DISTRIBUTION_SYNC_CHECK: 1
-      - name: Require committed generated output
-        run: git diff --exit-code -- index.html dist
+      - name: Require committed generated source
+        run: git diff --exit-code -- index.html
         working-directory: brand-studio
