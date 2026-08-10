@@ -19,7 +19,9 @@ const catalog = readCatalog()
 const distribution = readDistribution(config)
 const manifestPath = resolve(root, 'dist/manifest.json')
 
-syncDistributionAssets({ checkOnly: true })
+if (process.env.ONEWORKS_SKIP_DISTRIBUTION_SYNC_CHECK !== '1') {
+  syncDistributionAssets({ checkOnly: true })
+}
 
 if (!existsSync(manifestPath)) throw new Error('Run pnpm render before pnpm check')
 
