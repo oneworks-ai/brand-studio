@@ -30,6 +30,7 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/google-chrome
           ONEWORKS_APP_ROOT: ${{ github.workspace }}/app
+          ONEWORKS_SKIP_PRODUCT_SYNC: 1
       - run: pnpm check
         working-directory: brand-studio
         env:

@@ -333,7 +333,7 @@ const renderDistributionSurface = (surface, sceneByName) => {
 }
 
 export const compileStudio = ({ write = true } = {}) => {
-  if (write) syncProductAssets()
+  if (write && process.env.ONEWORKS_SKIP_PRODUCT_SYNC !== '1') syncProductAssets()
   const catalog = readCatalog()
   const config = readStudioConfig()
   const distribution = readDistribution(config)
