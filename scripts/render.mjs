@@ -5,7 +5,6 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
-  statSync,
   writeFileSync
 } from 'node:fs'
 import { createServer } from 'node:http'
@@ -15,6 +14,7 @@ import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 import { catalogInputs, readCatalog, readStudioConfig, resolveContained } from './catalog.mjs'
+import { captureScreenshotWithRetry, removePartialScreenshot, waitForScreenshot } from './screenshot.mjs'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const config = readStudioConfig()
@@ -53,32 +53,14 @@ await new Promise((resolveReady, rejectReady) => {
 
 const artifacts = []
 
-const waitForScreenshot = async (path, browserProcess) => {
-  const deadline = Date.now() + 20_000
-  let previousSize = -1
-  let stableReads = 0
-
-  while (Date.now() < deadline) {
-    if (browserProcess.exitCode != null && !existsSync(path)) {
-      throw new Error(`Chrome exited with ${browserProcess.exitCode} before writing ${path}`)
-    }
-    if (existsSync(path)) {
-      const size = statSync(path).size
-      stableReads = size > 0 && size === previousSize ? stableReads + 1 : 0
-      previousSize = size
-      if (stableReads >= 2) return
-    }
-    await new Promise(resolveWait => setTimeout(resolveWait, 100))
-  }
-  throw new Error(`Timed out waiting for ${path}`)
-}
-
 const stopBrowser = async (browserProcess, profile) => {
-  browserProcess.kill('SIGTERM')
-  await Promise.race([
-    new Promise(resolveExit => browserProcess.once('exit', resolveExit)),
-    new Promise(resolveWait => setTimeout(resolveWait, 2_000))
-  ])
+  if (browserProcess.exitCode == null && browserProcess.signalCode == null) {
+    browserProcess.kill('SIGTERM')
+    await Promise.race([
+      new Promise(resolveExit => browserProcess.once('exit', resolveExit)),
+      new Promise(resolveWait => setTimeout(resolveWait, 2_000))
+    ])
+  }
   for (let attempt = 0; attempt < 5; attempt += 1) {
     try {
       rmSync(profile, { force: true, recursive: true })
@@ -109,27 +91,40 @@ try {
         continue
       }
       const url = `http://${host}:${port}/?scene=${encodeURIComponent(scene.name)}&theme=${theme}&export=1&width=${scene.width}&height=${scene.height}`
-      rmSync(outputPath, { force: true })
-      const chromeProfile = mkdtempSync(resolve(tmpdir(), 'oneworks-brand-studio-'))
-      const browserProcess = spawn(chrome, [
-        '--headless=new',
-        '--hide-scrollbars',
-        '--no-first-run',
-        '--no-default-browser-check',
-        '--disable-background-networking',
-        '--disable-component-update',
-        '--disable-sync',
-        '--run-all-compositor-stages-before-draw',
-        '--force-device-scale-factor=1',
-        '--virtual-time-budget=2500',
-        `--user-data-dir=${chromeProfile}`,
-        `--window-size=${scene.width},${scene.height}`,
-        `--screenshot=${outputPath}`,
-        url
-      ], { stdio: 'ignore' })
+      await captureScreenshotWithRetry({
+        capture: async () => {
+          removePartialScreenshot(outputPath)
+          const chromeProfile = mkdtempSync(resolve(tmpdir(), 'oneworks-brand-studio-'))
+          const browserProcess = spawn(chrome, [
+            '--headless=new',
+            '--hide-scrollbars',
+            '--no-first-run',
+            '--no-default-browser-check',
+            '--disable-background-networking',
+            '--disable-component-update',
+            '--disable-sync',
+            '--run-all-compositor-stages-before-draw',
+            '--force-device-scale-factor=1',
+            '--virtual-time-budget=2500',
+            `--user-data-dir=${chromeProfile}`,
+            `--window-size=${scene.width},${scene.height}`,
+            `--screenshot=${outputPath}`,
+            url
+          ], { stdio: 'ignore' })
 
-      await waitForScreenshot(outputPath, browserProcess)
-      await stopBrowser(browserProcess, chromeProfile)
+          try {
+            await waitForScreenshot({
+              browserProcess,
+              height: scene.height,
+              path: outputPath,
+              width: scene.width
+            })
+          } finally {
+            await stopBrowser(browserProcess, chromeProfile)
+          }
+        },
+        cleanup: async () => removePartialScreenshot(outputPath)
+      })
 
       const bytes = readFileSync(outputPath)
       artifacts.push({
