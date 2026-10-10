@@ -15,6 +15,21 @@
       }
     },
     {
+      "id": "cline",
+      "label": "Cline",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/cline.svg",
+      "darkIcon": "assets/icons/adapters/cline-dark.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 15,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/adapters/cline.svg",
+        "darkPath": "assets/brand/adapters/cline-dark.svg"
+      }
+    },
+    {
       "id": "codex",
       "label": "Codex",
       "kind": "adapter",
@@ -43,6 +58,49 @@
       }
     },
     {
+      "id": "cursor",
+      "label": "Cursor",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/cursor.svg",
+      "darkIcon": "assets/icons/adapters/cursor-dark.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 35,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/adapters/cursor.svg",
+        "darkPath": "assets/brand/adapters/cursor-dark.svg"
+      }
+    },
+    {
+      "id": "dsh",
+      "label": "DSH",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/dsh.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 37,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/adapters/dsh.svg"
+      }
+    },
+    {
+      "id": "droid",
+      "label": "Factory Droid",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/droid.svg",
+      "darkIcon": "assets/icons/adapters/droid-dark.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 38,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/adapters/droid.svg",
+        "darkPath": "assets/brand/adapters/droid-dark.svg"
+      }
+    },
+    {
       "id": "gemini",
       "label": "Gemini",
       "kind": "adapter",
@@ -53,6 +111,60 @@
       "provenance": {
         "repository": "oneworks-ai/app",
         "path": "assets/brand/adapters/gemini.svg"
+      }
+    },
+    {
+      "id": "goose",
+      "label": "Goose",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/goose.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 42,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/adapters/goose.svg"
+      }
+    },
+    {
+      "id": "grok",
+      "label": "Grok",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/grok.svg",
+      "darkIcon": "assets/icons/adapters/grok-dark.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 45,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/adapters/grok.svg",
+        "darkPath": "assets/brand/adapters/grok-dark.svg"
+      }
+    },
+    {
+      "id": "kiro",
+      "label": "Kiro",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/kiro.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 47,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/adapters/kiro.svg"
+      }
+    },
+    {
+      "id": "junie",
+      "label": "Junie",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/junie.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 48,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/adapters/junie.svg"
       }
     },
     {
@@ -94,6 +206,19 @@
         "repository": "oneworks-ai/app",
         "path": "assets/brand/adapters/pi.svg",
         "darkPath": "assets/brand/adapters/pi-dark.svg"
+      }
+    },
+    {
+      "id": "qwen-code",
+      "label": "Qwen Code",
+      "kind": "adapter",
+      "icon": "assets/icons/adapters/qwen-code.svg",
+      "enabled": true,
+      "featured": true,
+      "priority": 80,
+      "provenance": {
+        "repository": "oneworks-ai/app",
+        "path": "assets/brand/adapters/qwen-code.svg"
       }
     },
     {
