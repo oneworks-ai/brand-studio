@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "catalog": "catalog/catalog.json",
-  "catalogEntries": 32,
+  "catalogEntries": 41,
   "inputs": [
     {
       "file": "assets/distribution/android-launcher-dark.png",
@@ -32,6 +32,14 @@
       "sha256": "29b8478fdb4f14048d74ee364670b268c5ab8a2ee6aa6726753727c1390b74f9"
     },
     {
+      "file": "assets/icons/adapters/cline-dark.svg",
+      "sha256": "2724b451eda1109e90379e6341f100d5299cddc4dd573c862184804c3adcfbf6"
+    },
+    {
+      "file": "assets/icons/adapters/cline.svg",
+      "sha256": "cf2b0d16ed5f3e9f7a018970978c756bbdf2bcf2b196807592e55412440d252e"
+    },
+    {
       "file": "assets/icons/adapters/codex-dark.svg",
       "sha256": "1f1879449472ec36f70362c4af0e25f787a384577e30ff4b0fe308c5304d0184"
     },
@@ -44,12 +52,52 @@
       "sha256": "f3a9606442ffd44281ab9324430059f3ddf43f099d1b6f2b29a403ca2ea1c4d0"
     },
     {
+      "file": "assets/icons/adapters/cursor-dark.svg",
+      "sha256": "0c1940179c8fe0a877c331a1e19a2cb9437a8f9633594e1d81f9ffba106615ff"
+    },
+    {
+      "file": "assets/icons/adapters/cursor.svg",
+      "sha256": "58d7237ab77e9ed8d5f8b297577bf673b21c1fe6a1610d6f1bc8598e886d18c6"
+    },
+    {
+      "file": "assets/icons/adapters/droid-dark.svg",
+      "sha256": "3934553672d53acdd8f30c1c6463c851772af064f4649392074b18027c7d5327"
+    },
+    {
+      "file": "assets/icons/adapters/droid.svg",
+      "sha256": "84fa8faae796369c86a080ae7cc105426a212183c1ca80430d5f6f0aee377cba"
+    },
+    {
+      "file": "assets/icons/adapters/dsh.svg",
+      "sha256": "035b68e57ac4490f6880e25f4e7f534d7b50b249308ccea77af34cc5d9e840c3"
+    },
+    {
       "file": "assets/icons/adapters/gemini.svg",
       "sha256": "a93d0c58239286157864b7c76f900af08324b664b9e9ba2685924917f4b874de"
     },
     {
+      "file": "assets/icons/adapters/goose.svg",
+      "sha256": "8facb20de4ec81490ff50e52de76fc8b1b7637446e88b9b8321524faf09765b2"
+    },
+    {
+      "file": "assets/icons/adapters/grok-dark.svg",
+      "sha256": "7cf39f9fd467b66fe1e2141c6177061f5f785f344340e5d0ec5f45200132eed3"
+    },
+    {
+      "file": "assets/icons/adapters/grok.svg",
+      "sha256": "74ec937c168b7304ac5b77e26226bae9484136e4f843119a39f12c9352321034"
+    },
+    {
+      "file": "assets/icons/adapters/junie.svg",
+      "sha256": "2064d694bb8432caf6e28220554cf2c43b0ce39e7be216aa51cb6de5486e64ef"
+    },
+    {
       "file": "assets/icons/adapters/kimi.svg",
       "sha256": "f8a70e3fe23c37d8d31b4a468ec49dd773cc1950f6f5fcc90e570d02570d80ea"
+    },
+    {
+      "file": "assets/icons/adapters/kiro.svg",
+      "sha256": "774cbc1c7ecec8c935a6091595583d7a92fc8289d6f1db3f071c0f50c61c369f"
     },
     {
       "file": "assets/icons/adapters/opencode.svg",
@@ -62,6 +110,10 @@
     {
       "file": "assets/icons/adapters/pi.svg",
       "sha256": "0f16df179ba0783c57943de450d1cbde36300c4ab3afa90ea4d1ce555ee3f8e3"
+    },
+    {
+      "file": "assets/icons/adapters/qwen-code.svg",
+      "sha256": "f2ac6cac47c0c98e24550dc22b74f48f23c7499372a3f1cf47dba61bf66d38ff"
     },
     {
       "file": "assets/icons/channels/imessage.svg",
@@ -169,7 +221,7 @@
     },
     {
       "file": "catalog/catalog.json",
-      "sha256": "333ebc66d9d1868c7fcb493416316c2c8a5b0bbf3e006141c9750fdfdced7b15"
+      "sha256": "44e942734e5f7e350c86c17c7e519b64c4ea4bb61155e31d52776ebb8acca5ec"
     },
     {
       "file": "distribution/distribution.json",
@@ -185,7 +237,7 @@
     }
   ],
   "source": "index.html",
-  "sourceSha256": "70c5f5cc3d8cf8987585da4c92aa06f58688977e19ee3702aa9d109bf536256e",
+  "sourceSha256": "0160fd3dc75b3ae941e11228fe400a26f568fe372a3d5f0974c0b476dee24caa",
   "artifacts": [
     {
       "file": "dist/github-org-readme-light.png",
@@ -207,7 +259,7 @@
       "file": "dist/github-social-preview-light.png",
       "height": 640,
       "scene": "github-social-preview",
-      "sha256": "233e94d64068829df4f279d4e729e32cceddf84d9522db33d5d7965ca134f26f",
+      "sha256": "31a6e0b052d6eacc57ea49fc845d3e7afd82b0059acc4fb4920aab69ab10671a",
       "theme": "light",
       "width": 1280
     },
@@ -215,7 +267,7 @@
       "file": "dist/github-social-preview-dark.png",
       "height": 640,
       "scene": "github-social-preview",
-      "sha256": "6c305b6f730b339f2194e9a39b4bb3454536e55daa83180e212cffc928434f7f",
+      "sha256": "18ef0d18f7016828852ccee3cfbe4abc8dd5209c907498e0f58ec21f2be9ce9c",
       "theme": "dark",
       "width": 1280
     },
@@ -223,7 +275,7 @@
       "file": "dist/homepage-open-graph-light.png",
       "height": 600,
       "scene": "homepage-open-graph",
-      "sha256": "cfbdc8de9299c6b76ec8b0d30b3214aa0f2e644a0690e810750e4bcfdf158280",
+      "sha256": "81555beefbb88a2a8be277cf8fcee7cde719f41b79e66b0dc2232c4fc0c9653d",
       "theme": "light",
       "width": 1200
     },
@@ -231,7 +283,7 @@
       "file": "dist/homepage-open-graph-dark.png",
       "height": 600,
       "scene": "homepage-open-graph",
-      "sha256": "f25746657ec3a4c6a6a4803f5913930c39abfd9ffe54378470192ef537c85b7f",
+      "sha256": "96ea8c5ff5aaeaa67fdf6e6414550409cc41785ab98aa733844bbfa0555c4b6a",
       "theme": "dark",
       "width": 1200
     },
@@ -239,7 +291,7 @@
       "file": "dist/vscode-marketplace-light.png",
       "height": 640,
       "scene": "vscode-marketplace",
-      "sha256": "3533c4d2d288edf56f80868bdbf2178bdfa5771ee0df408989ef20a0a307b007",
+      "sha256": "4a2653ca4b2de478e27148cc9941cc9cc6e50c77f28137cae0d3df3ab9dc97f0",
       "theme": "light",
       "width": 1280
     },
@@ -247,7 +299,7 @@
       "file": "dist/vscode-marketplace-dark.png",
       "height": 640,
       "scene": "vscode-marketplace",
-      "sha256": "0104ea5b2b7b0b717f5c0b07ebd2b3f0da30f682cba0d76d6df6d4b25f7e7c1f",
+      "sha256": "921eb69e90da1053d8154dcdd589e089c796e05d666582aa1da536be8c20d1e6",
       "theme": "dark",
       "width": 1280
     },
@@ -255,7 +307,7 @@
       "file": "dist/chrome-web-store-light.png",
       "height": 640,
       "scene": "chrome-web-store",
-      "sha256": "ecb49722c9b0c3259f2686755185f7d198db636d153f0bc386c2f50a1bdac0d0",
+      "sha256": "6ecea8d2f6b0b3d9eb3d9ab1b74f3410b97cef09ae1fa397453546f3ae299a64",
       "theme": "light",
       "width": 1280
     },
@@ -263,7 +315,7 @@
       "file": "dist/chrome-web-store-dark.png",
       "height": 640,
       "scene": "chrome-web-store",
-      "sha256": "835fdd221e84978d54359960d95c1c5ebc781fd6d33ea3bb11de7c0eef51b57c",
+      "sha256": "9505d043793b8b2508e3a35d78cfdabd37f0f040e85e433b49946ea2855af6b8",
       "theme": "dark",
       "width": 1280
     },
@@ -271,7 +323,7 @@
       "file": "dist/npm-readme-header-light.png",
       "height": 640,
       "scene": "npm-readme-header",
-      "sha256": "575f3e9a7cab33855a8ff0a8af932ba8fd20a741c4ce55cee0fb48fd32948133",
+      "sha256": "9ddae48d542e69d57dbc94cf5643ec7f1356694ab00eadceb52e8dbd7f75aa21",
       "theme": "light",
       "width": 1280
     },
@@ -279,7 +331,7 @@
       "file": "dist/npm-readme-header-dark.png",
       "height": 640,
       "scene": "npm-readme-header",
-      "sha256": "9585b0b9c3d2eb5630f58612b29d28c14fd41d8001cc75ed108de574e798c7ac",
+      "sha256": "2660553d88b52d30795e1bf0aa70129696b3efe3faea8453c18ec6ac40603e25",
       "theme": "dark",
       "width": 1280
     },
@@ -287,7 +339,7 @@
       "file": "dist/x-profile-header-light.png",
       "height": 500,
       "scene": "x-profile-header",
-      "sha256": "e9b1490bc0a1ab3e82ed455de044dcb0d644f16fe1bd86f214c60f849ebffd87",
+      "sha256": "82cc4c25cd549e84fabf40b9917e52de3a6827be02466154b9446d8bc59cd3df",
       "theme": "light",
       "width": 1500
     },
@@ -295,7 +347,7 @@
       "file": "dist/x-profile-header-dark.png",
       "height": 500,
       "scene": "x-profile-header",
-      "sha256": "94fe8246fe43c5577d2a1ddeb17d8be12358f84c9a43b4e51f182d120e1bcb3a",
+      "sha256": "07be645b283c64ddcc77f8612bfd7f75823b2dbdde3bb4da9d8f515698ac1ad3",
       "theme": "dark",
       "width": 1500
     }
